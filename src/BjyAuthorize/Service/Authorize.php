@@ -2,7 +2,7 @@
 /**
  * BjyAuthorize Module (https://github.com/bjyoungblood/BjyAuthorize)
  *
- * @link https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
+ * @link    https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
  * @license http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -21,16 +21,25 @@ use BjyAuthorize\Guard\GuardInterface;
 use Zend\Permissions\Acl\Resource\ResourceInterface;
 use Zend\Cache\Storage\StorageInterface;
 
+use Zend\EventManager\EventManagerAwareInterface;
+use Zend\EventManager\EventManagerInterface;
+use Zend\EventManager\EventManager;
+
 /**
  * Authorize service
  *
  * @author Ben Youngblood <bx.youngblood@gmail.com>
  */
-class Authorize
+class Authorize implements EventManagerAwareInterface
 {
     const TYPE_ALLOW = 'allow';
 
     const TYPE_DENY = 'deny';
+
+    /**
+     * @var EventManagerInterface
+     */
+    protected $eventManager;
 
     /**
      * @var Acl
@@ -78,8 +87,8 @@ class Authorize
     protected $config;
 
     /**
-     * @param array                                         $config
-     * @param \Zend\ServiceManager\ServiceLocatorInterface  $serviceLocator
+     * @param array                                        $config
+     * @param \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
      */
     public function __construct(array $config, ServiceLocatorInterface $serviceLocator)
     {
@@ -225,6 +234,7 @@ class Authorize
     {
         $this->loaded && $this->loaded->__invoke();
 
+
         return $this->acl;
     }
 
@@ -255,22 +265,26 @@ class Authorize
     public function load()
     {
         if (null === $this->loaded) {
+
             return;
         }
 
         $this->loaded = null;
 
         /** @var $cache StorageInterface */
-        $cache      = $this->serviceLocator->get('BjyAuthorize\Cache');
-        $success    = false;
-        $this->acl  = $cache->getItem($this->config['cache_key'], $success);
+        $cache     = $this->serviceLocator->get('BjyAuthorize\Cache');
+        $success   = false;
+        $this->acl = $cache->getItem($this->config['cache_key'], $success);
 
         if (!($this->acl instanceof Acl) || !$success) {
             $this->loadAcl();
             $cache->setItem($this->config['cache_key'], $this->acl);
         }
 
-        $this->setIdentityProvider($this->serviceLocator->get('BjyAuthorize\Provider\Identity\ProviderInterface'));
+        $this->eventManager->trigger('acl.loaded', $this, array('acl' => $this->acl));
+
+        
+$this->setIdentityProvider($this->serviceLocator->get('BjyAuthorize\Provider\Identity\ProviderInterface'));
 
         $parentRoles = $this->getIdentityProvider()->getIdentityRoles();
 
@@ -351,9 +365,15 @@ class Authorize
             throw new \InvalidArgumentException('Invalid rule definition: ' . print_r($rule, true));
         }
 
+
         if (is_string($assertion)) {
             $assertion = $this->serviceLocator->get($assertion);
         }
+
+        if (!is_callable($assertion)) {
+            $assertion = null;
+        }
+
 
         if (static::TYPE_ALLOW === $type) {
             $this->acl->allow($roles, $resources, $privileges, $assertion);
@@ -408,4 +428,27 @@ class Authorize
             }
         }
     }
+
+    /**
+     * @param  EventManagerInterface $eventManager
+     *
+     * @return void
+     */
+    public function setEventManager(EventManagerInterface $eventManager)
+    {
+        $this->eventManager = $eventManager;
+    }
+
+    /**
+     * @return EventManagerInterface
+     */
+    public function getEventManager()
+    {
+        if (null === $this->eventManager) {
+            $this->setEventManager(new EventManager());
+        }
+
+        return $this->eventManager;
+    }
 }
+
