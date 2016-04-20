@@ -8,22 +8,21 @@
 
 namespace BjyAuthorize\Service;
 
-use BjyAuthorize\Provider\Role\ProviderInterface as RoleProvider;
-use BjyAuthorize\Provider\Resource\ProviderInterface as ResourceProvider;
-use BjyAuthorize\Provider\Rule\ProviderInterface as RuleProvider;
+use BjyAuthorize\Acl\Role;
+use BjyAuthorize\Guard\GuardInterface;
 use BjyAuthorize\Provider\Identity\ProviderInterface as IdentityProvider;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use BjyAuthorize\Provider\Resource\ProviderInterface as ResourceProvider;
+use BjyAuthorize\Provider\Role\ProviderInterface as RoleProvider;
+use BjyAuthorize\Provider\Rule\ProviderInterface as RuleProvider;
+use Interop\Container\ContainerInterface;
+use Zend\Cache\Storage\StorageInterface;
+use Zend\EventManager\EventManager;
+use Zend\EventManager\EventManagerAwareInterface;
+use Zend\EventManager\EventManagerInterface;
 use Zend\Permissions\Acl\Acl;
 use Zend\Permissions\Acl\Exception\InvalidArgumentException;
 use Zend\Permissions\Acl\Resource\GenericResource;
-use BjyAuthorize\Acl\Role;
-use BjyAuthorize\Guard\GuardInterface;
 use Zend\Permissions\Acl\Resource\ResourceInterface;
-use Zend\Cache\Storage\StorageInterface;
-
-use Zend\EventManager\EventManagerAwareInterface;
-use Zend\EventManager\EventManagerInterface;
-use Zend\EventManager\EventManager;
 
 /**
  * Authorize service
@@ -49,17 +48,17 @@ class Authorize implements EventManagerAwareInterface
     /**
      * @var RoleProvider[]
      */
-    protected $roleProviders = array();
+    protected $roleProviders = [];
 
     /**
      * @var ResourceProvider[]
      */
-    protected $resourceProviders = array();
+    protected $resourceProviders = [];
 
     /**
      * @var RuleProvider[]
      */
-    protected $ruleProviders = array();
+    protected $ruleProviders = [];
 
     /**
      * @var IdentityProvider
@@ -69,7 +68,7 @@ class Authorize implements EventManagerAwareInterface
     /**
      * @var GuardInterface[]
      */
-    protected $guards = array();
+    protected $guards = [];
 
     /**
      * @var \Closure|null
@@ -79,7 +78,7 @@ class Authorize implements EventManagerAwareInterface
     /**
      * @var \Zend\ServiceManager\ServiceLocatorInterface
      */
-    protected $serviceLocator;
+    protected $container;
 
     /**
      * @var array
@@ -87,15 +86,17 @@ class Authorize implements EventManagerAwareInterface
     protected $config;
 
     /**
-     * @param array                                        $config
-     * @param \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
+     * Authorize constructor.
+     *
+     * @param array              $config
+     * @param ContainerInterface $container
      */
-    public function __construct(array $config, ServiceLocatorInterface $serviceLocator)
+    public function __construct(array $config, ContainerInterface $container)
     {
-        $this->config         = $config;
-        $this->serviceLocator = $serviceLocator;
-        $that                 = $this;
-        $this->loaded         = function () use ($that) {
+        $this->config = $config;
+        $this->container = $container;
+        $that = $this;
+        $this->loaded = function () use ($that) {
             $that->load();
         };
     }
@@ -272,8 +273,8 @@ class Authorize implements EventManagerAwareInterface
         $this->loaded = null;
 
         /** @var $cache StorageInterface */
-        $cache     = $this->serviceLocator->get('BjyAuthorize\Cache');
-        $success   = false;
+        $cache = $this->container->get('BjyAuthorize\Cache');
+        $success = false;
         $this->acl = $cache->getItem($this->config['cache_key'], $success);
 
         if (!($this->acl instanceof Acl) || !$success) {
@@ -281,10 +282,10 @@ class Authorize implements EventManagerAwareInterface
             $cache->setItem($this->config['cache_key'], $this->acl);
         }
 
-        $this->eventManager->trigger('acl.loaded', $this, array('acl' => $this->acl));
+        $this->eventManager->trigger('acl.loaded', $this, ['acl' => $this->acl]);
 
-        
-$this->setIdentityProvider($this->serviceLocator->get('BjyAuthorize\Provider\Identity\ProviderInterface'));
+
+        $this->setIdentityProvider($this->container->get('BjyAuthorize\Provider\Identity\ProviderInterface'));
 
         $parentRoles = $this->getIdentityProvider()->getIdentityRoles();
 
@@ -299,7 +300,7 @@ $this->setIdentityProvider($this->serviceLocator->get('BjyAuthorize\Provider\Ide
     protected function addRoles($roles)
     {
         if (!is_array($roles)) {
-            $roles = array($roles);
+            $roles = [$roles];
         }
 
         /* @var $role Role */
@@ -309,7 +310,7 @@ $this->setIdentityProvider($this->serviceLocator->get('BjyAuthorize\Provider\Ide
             }
 
             if ($role->getParent() !== null) {
-                $this->addRoles(array($role->getParent()));
+                $this->addRoles([$role->getParent()]);
                 $this->acl->addRole($role, $role->getParent());
             } elseif (!$this->acl->hasRole($role)) {
                 $this->acl->addRole($role);
@@ -352,11 +353,11 @@ $this->setIdentityProvider($this->serviceLocator->get('BjyAuthorize\Provider\Ide
     protected function loadRule(array $rule, $type)
     {
         $privileges = $assertion = null;
-        $ruleSize   = count($rule);
+        $ruleSize = count($rule);
 
         if (4 === $ruleSize) {
             list($roles, $resources, $privileges, $assertion) = $rule;
-            $assertion = $this->serviceLocator->get($assertion);
+            $assertion = $this->container->get($assertion);
         } elseif (3 === $ruleSize) {
             list($roles, $resources, $privileges) = $rule;
         } elseif (2 === $ruleSize) {
@@ -367,7 +368,7 @@ $this->setIdentityProvider($this->serviceLocator->get('BjyAuthorize\Provider\Ide
 
 
         if (is_string($assertion)) {
-            $assertion = $this->serviceLocator->get($assertion);
+            $assertion = $this->container->get($assertion);
         }
 
         if (!is_callable($assertion)) {
@@ -389,19 +390,19 @@ $this->setIdentityProvider($this->serviceLocator->get('BjyAuthorize\Provider\Ide
     {
         $this->acl = new Acl();
 
-        foreach ($this->serviceLocator->get('BjyAuthorize\RoleProviders') as $provider) {
+        foreach ($this->container->get('BjyAuthorize\RoleProviders') as $provider) {
             $this->addRoleProvider($provider);
         }
 
-        foreach ($this->serviceLocator->get('BjyAuthorize\ResourceProviders') as $provider) {
+        foreach ($this->container->get('BjyAuthorize\ResourceProviders') as $provider) {
             $this->addResourceProvider($provider);
         }
 
-        foreach ($this->serviceLocator->get('BjyAuthorize\RuleProviders') as $provider) {
+        foreach ($this->container->get('BjyAuthorize\RuleProviders') as $provider) {
             $this->addRuleProvider($provider);
         }
 
-        foreach ($this->serviceLocator->get('BjyAuthorize\Guards') as $guard) {
+        foreach ($this->container->get('BjyAuthorize\Guards') as $guard) {
             $this->addGuard($guard);
         }
 
