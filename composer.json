@@ -1,5 +1,5 @@
 {
-    "name":         "japaveh-webdesign/bjy-authorize",
+    "name":         "jield-webdev/bjy-authorize",
     "description":  "Zend\\Acl based firewall system for ZF2 dispatch protection",
     "type":         "library",
     "license":      "BSD-3-Clause",
