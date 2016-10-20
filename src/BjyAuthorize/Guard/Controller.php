@@ -2,7 +2,7 @@
 /**
  * BjyAuthorize Module (https://github.com/bjyoungblood/BjyAuthorize)
  *
- * @link https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
+ * @link    https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
  * @license http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -30,9 +30,9 @@ class Controller extends AbstractGuard
     protected function extractResourcesFromRule(array $rule)
     {
         $results        = array();
-        $rule['action'] = isset($rule['action']) ? (array) $rule['action'] : array(null);
+        $rule['action'] = isset($rule['action']) ? (array)$rule['action'] : array(null);
 
-        foreach ((array) $rule['controller'] as $controller) {
+        foreach ((array)$rule['controller'] as $controller) {
             foreach ($rule['action'] as $action) {
                 $results[] = $this->getResourceName($controller, $action);
             }
@@ -44,7 +44,7 @@ class Controller extends AbstractGuard
     /**
      * {@inheritDoc}
      */
-    public function attach(EventManagerInterface $events)
+    public function attach(EventManagerInterface $events, $priority = 1)
     {
         $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'onDispatch'), -1000);
     }

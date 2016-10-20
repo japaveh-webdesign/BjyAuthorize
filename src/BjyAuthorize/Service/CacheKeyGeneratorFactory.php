@@ -9,37 +9,40 @@
 namespace BjyAuthorize\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\Cache\Storage\StorageInterface;
-use Zend\Cache\StorageFactory;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * Factory for building the cache storage
+ * Factory for building a cache key generator
  *
- * @author Christian Bergau <cbergau86@gmail.com>
+ * @author Steve Rhoades <sedonami@gmail.com>
  */
-class CacheFactory implements FactoryInterface
+class CacheKeyGeneratorFactory implements FactoryInterface
 {
     /**
      * @param ContainerInterface $container
      * @param string $requestedName
      * @param array|null $options
-     * @return StorageInterface
+     * @return \Closure
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        return StorageFactory::factory($container->get('BjyAuthorize\Config')['cache_options']);
+        $config = $container->get('BjyAuthorize\Config');
+        $cacheKey = empty($config['cache_key']) ? 'bjyauthorize_acl' : (string)$config['cache_key'];
+
+        return function () use ($cacheKey) {
+            return $cacheKey;
+        };
     }
 
     /**
-     * Create a cache
+     * Create a cache key
      *
      * @param   ServiceLocatorInterface $serviceLocator
-     * @return  StorageInterface
+     * @return  callable
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        return $this($serviceLocator, StorageFactory::class);
+        return $this($serviceLocator, '');
     }
 }
