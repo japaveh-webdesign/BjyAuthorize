@@ -252,6 +252,8 @@ class Authorize implements EventManagerAwareInterface
         try {
             return $this->acl->isAllowed($this->getIdentity(), $resource, $privilege);
         } catch (InvalidArgumentException $e) {
+            var_dump($e);
+            die();
             return false;
         }
     }
