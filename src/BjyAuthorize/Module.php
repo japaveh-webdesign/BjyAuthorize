@@ -2,19 +2,22 @@
 /**
  * BjyAuthorize Module (https://github.com/bjyoungblood/BjyAuthorize)
  *
- * @link https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
+ * @link    https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
  * @license http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace BjyAuthorize;
 
+use BjyAuthorize\Guard\AbstractGuard;
+use BjyAuthorize\View\UnauthorizedStrategy;
 use Zend\EventManager\EventInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\BootstrapListenerInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ModuleManager\Feature\ControllerPluginProviderInterface;
 use Zend\ModuleManager\Feature\ViewHelperProviderInterface;
-use Zend\ServiceManager\AbstractPluginManager;
+use BjyAuthorize\Controller\Plugin;
+use BjyAuthorize\View\Helper;
 
 /**
  * BjyAuthorize Module
@@ -34,18 +37,18 @@ class Module implements
     public function onBootstrap(EventInterface $event)
     {
         /* @var $app \Zend\Mvc\ApplicationInterface */
-        $app            = $event->getTarget();
+        $app = $event->getTarget();
         /* @var $sm \Zend\ServiceManager\ServiceLocatorInterface */
         $serviceManager = $app->getServiceManager();
         $config         = $serviceManager->get('BjyAuthorize\Config');
-        $strategy       = $serviceManager->get($config['unauthorized_strategy']);
-        $guards         = $serviceManager->get('BjyAuthorize\Guards');
-
+        /** @var UnauthorizedStrategy $strategy */
+        $strategy = $serviceManager->get($config['unauthorized_strategy']);
+        /** @var AbstractGuard[] $guards */
+        $guards = $serviceManager->get('BjyAuthorize\Guards');
         foreach ($guards as $guard) {
-            $app->getEventManager()->attach($guard);
+            $guard->attach($app->getEventManager());
         }
-
-        $app->getEventManager()->attach($strategy);
+        $strategy->attach($app->getEventManager());
     }
 
     /**
@@ -55,17 +58,10 @@ class Module implements
     {
         return array(
             'factories' => array(
-                'isAllowed' => function (AbstractPluginManager $pluginManager) {
-                    $serviceLocator = $pluginManager->getServiceLocator();
-                    /* @var $authorize \BjyAuthorize\Service\Authorize */
-                    $authorize = $serviceLocator->get('BjyAuthorize\Service\Authorize');
-
-                    return new View\Helper\IsAllowed($authorize);
-                }
+                'isAllowed' => Helper\IsAllowedFactory::class,
             ),
         );
     }
-
     /**
      * {@inheritDoc}
      */
@@ -73,13 +69,7 @@ class Module implements
     {
         return array(
             'factories' => array(
-                'isAllowed' => function (AbstractPluginManager $pluginManager) {
-                    $serviceLocator = $pluginManager->getServiceLocator();
-                    /* @var $authorize \BjyAuthorize\Service\Authorize */
-                    $authorize = $serviceLocator->get('BjyAuthorize\Service\Authorize');
-
-                    return new Controller\Plugin\IsAllowed($authorize);
-                }
+                'isAllowed' => Plugin\IsAllowedFactory::class
             ),
         );
     }

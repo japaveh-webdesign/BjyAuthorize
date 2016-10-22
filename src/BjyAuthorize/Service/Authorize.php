@@ -93,10 +93,10 @@ class Authorize implements EventManagerAwareInterface
      */
     public function __construct(array $config, ContainerInterface $container)
     {
-        $this->config = $config;
+        $this->config    = $config;
         $this->container = $container;
-        $that = $this;
-        $this->loaded = function () use ($that) {
+        $that            = $this;
+        $this->loaded    = function () use ($that) {
             $that->load();
         };
     }
@@ -252,8 +252,6 @@ class Authorize implements EventManagerAwareInterface
         try {
             return $this->acl->isAllowed($this->getIdentity(), $resource, $privilege);
         } catch (InvalidArgumentException $e) {
-            var_dump($e);
-            die();
             return false;
         }
     }
@@ -275,17 +273,16 @@ class Authorize implements EventManagerAwareInterface
         $this->loaded = null;
 
         /** @var $cache StorageInterface */
-        $cache = $this->container->get('BjyAuthorize\Cache');
-        $success = false;
+        $cache     = $this->container->get('BjyAuthorize\Cache');
+        $success   = false;
         $this->acl = $cache->getItem($this->config['cache_key'], $success);
 
-        if (!($this->acl instanceof Acl) || !$success) {
+        if ( ! ($this->acl instanceof Acl) || ! $success) {
             $this->loadAcl();
             $cache->setItem($this->config['cache_key'], $this->acl);
         }
 
-        $this->eventManager->trigger('acl.loaded', $this, ['acl' => $this->acl]);
-
+//        $this->eventManager->trigger('acl.loaded', $this, ['acl' => $this->acl]);
 
         $this->setIdentityProvider($this->container->get('BjyAuthorize\Provider\Identity\ProviderInterface'));
 
@@ -301,7 +298,7 @@ class Authorize implements EventManagerAwareInterface
      */
     protected function addRoles($roles)
     {
-        if (!is_array($roles)) {
+        if ( ! is_array($roles)) {
             $roles = [$roles];
         }
 
@@ -314,7 +311,7 @@ class Authorize implements EventManagerAwareInterface
             if ($role->getParent() !== null) {
                 $this->addRoles([$role->getParent()]);
                 $this->acl->addRole($role, $role->getParent());
-            } elseif (!$this->acl->hasRole($role)) {
+            } elseif ( ! $this->acl->hasRole($role)) {
                 $this->acl->addRole($role);
             }
         }
@@ -338,7 +335,7 @@ class Authorize implements EventManagerAwareInterface
             if (is_array($value)) {
                 $this->acl->addResource($key, $parent);
                 $this->loadResource($value, $key);
-            } elseif (!$this->acl->hasResource($key)) {
+            } elseif ( ! $this->acl->hasResource($key)) {
                 $this->acl->addResource($key, $parent);
             }
         }
@@ -355,10 +352,11 @@ class Authorize implements EventManagerAwareInterface
     protected function loadRule(array $rule, $type)
     {
         $privileges = $assertion = null;
-        $ruleSize = count($rule);
+        $ruleSize   = count($rule);
 
         if (4 === $ruleSize) {
             list($roles, $resources, $privileges, $assertion) = $rule;
+
             $assertion = $this->container->get($assertion);
         } elseif (3 === $ruleSize) {
             list($roles, $resources, $privileges) = $rule;
@@ -368,12 +366,11 @@ class Authorize implements EventManagerAwareInterface
             throw new \InvalidArgumentException('Invalid rule definition: ' . print_r($rule, true));
         }
 
-
         if (is_string($assertion)) {
             $assertion = $this->container->get($assertion);
         }
 
-        if (!is_callable($assertion)) {
+        if ( ! is_callable($assertion)) {
             $assertion = null;
         }
 

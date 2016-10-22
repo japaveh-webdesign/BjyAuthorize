@@ -2,7 +2,7 @@
 /**
  * BjyAuthorize Module (https://github.com/bjyoungblood/BjyAuthorize)
  *
- * @link https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
+ * @link    https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
  * @license http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -42,13 +42,13 @@ class UnauthorizedStrategy implements ListenerAggregateInterface
      */
     public function __construct($template)
     {
-        $this->template = (string) $template;
+        $this->template = (string)$template;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function attach(EventManagerInterface $events)
+    public function attach(EventManagerInterface $events, $priority = 1)
     {
         $this->listeners[] = $events->attach(MvcEvent::EVENT_DISPATCH_ERROR, array($this, 'onDispatchError'), -5000);
     }
@@ -70,7 +70,7 @@ class UnauthorizedStrategy implements ListenerAggregateInterface
      */
     public function setTemplate($template)
     {
-        $this->template = (string) $template;
+        $this->template = (string)$template;
     }
 
     /**
@@ -102,8 +102,8 @@ class UnauthorizedStrategy implements ListenerAggregateInterface
 
         // Common view variables
         $viewVariables = array(
-           'error'      => $event->getParam('error'),
-           'identity'   => $event->getParam('identity'),
+            'error'    => $event->getParam('error'),
+            'identity' => $event->getParam('identity'),
         );
 
         switch ($event->getError()) {
@@ -115,7 +115,7 @@ class UnauthorizedStrategy implements ListenerAggregateInterface
                 $viewVariables['route'] = $event->getParam('route');
                 break;
             case Application::ERROR_EXCEPTION:
-                if (!($event->getParam('exception') instanceof UnAuthorizedException)) {
+                if ( ! ($event->getParam('exception') instanceof UnAuthorizedException)) {
                     return;
                 }
 
