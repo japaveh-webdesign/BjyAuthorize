@@ -15,5 +15,5 @@ namespace BjyAuthorize\Service;
  */
 class GuardsServiceFactory extends BaseProvidersServiceFactory
 {
-    const PROVIDER_SETTING = 'guards';
+    public const PROVIDER_SETTING = 'guards';
 }

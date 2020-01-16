@@ -10,7 +10,7 @@
 
 namespace BjyAuthorizeTest\Service;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Service\ControllerGuardServiceFactory;
 
 /**
@@ -18,7 +18,7 @@ use BjyAuthorize\Service\ControllerGuardServiceFactory;
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class ControllerGuardServiceFactoryTest extends PHPUnit_Framework_TestCase
+class ControllerGuardServiceFactoryTest extends TestCase
 {
     /**
      * @covers \BjyAuthorize\Service\ControllerGuardServiceFactory::createService
@@ -26,12 +26,12 @@ class ControllerGuardServiceFactoryTest extends PHPUnit_Framework_TestCase
     public function testCreateService()
     {
         $factory          = new ControllerGuardServiceFactory();
-        $serviceLocator   = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
-        $config           = array(
-            'guards' => array(
-                'BjyAuthorize\\Guard\\Controller' => array(),
-            ),
-        );
+        $serviceLocator   = $this->createMock('Laminas\\ServiceManager\\ServiceLocatorInterface');
+        $config           = [
+            'guards' => [
+                'BjyAuthorize\\Guard\\Controller' => [],
+            ],
+        ];
 
         $serviceLocator
             ->expects($this->any())

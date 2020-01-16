@@ -9,15 +9,15 @@
 namespace BjyAuthorizeTest\Service;
 
 use BjyAuthorize\Service\AuthorizeFactory;
-use PHPUnit_Framework_TestCase;
-use Zend\ServiceManager\ServiceManager;
+use \PHPUnit\Framework\TestCase;
+use Laminas\ServiceManager\ServiceManager;
 
 /**
  * Test for {@see \BjyAuthorize\Service\AuthorizeFactory}
  *
  * @author Christian Bergau <cbergau86@gmail.com>
  */
-class AuthorizeFactoryTest extends PHPUnit_Framework_TestCase
+class AuthorizeFactoryTest extends TestCase
 {
     /**
      * @covers \BjyAuthorize\Service\AuthorizeFactory::createService
@@ -25,7 +25,7 @@ class AuthorizeFactoryTest extends PHPUnit_Framework_TestCase
     public function testCreateServiceSetCacheOptionsIfCacheIsEnabledAndAdapterOptionsAreProvided()
     {
         $serviceLocator = new ServiceManager();
-        $serviceLocator->setService('BjyAuthorize\Config', array('cache_key' => 'bjyauthorize_acl'));
+        $serviceLocator->setService('BjyAuthorize\Config', ['cache_key' => 'bjyauthorize_acl']);
 
         $authorizeFactory = new AuthorizeFactory();
 

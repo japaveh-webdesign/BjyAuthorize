@@ -10,8 +10,8 @@ namespace BjyAuthorize\Service;
 
 use BjyAuthorize\Provider\Role\ZendDb;
 use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\FactoryInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Factory responsible of instantiating {@see \BjyAuthorize\Provider\Role\ZendDb}
@@ -31,7 +31,7 @@ class ZendDbRoleProviderServiceFactory implements FactoryInterface
     /**
      * {@inheritDoc}
      *
-     * @return \BjyAuthorize\Provider\Role\ZendDb
+     * @return ZendDb
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {

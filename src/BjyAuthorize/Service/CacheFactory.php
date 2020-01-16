@@ -9,10 +9,10 @@
 namespace BjyAuthorize\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\Cache\Storage\StorageInterface;
-use Zend\Cache\StorageFactory;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\Cache\Storage\StorageInterface;
+use Laminas\Cache\StorageFactory;
+use Laminas\ServiceManager\FactoryInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Factory for building the cache storage
@@ -35,7 +35,7 @@ class CacheFactory implements FactoryInterface
     /**
      * Create a cache
      *
-     * @param   ServiceLocatorInterface $serviceLocator
+     * @param ServiceLocatorInterface $serviceLocator
      * @return  StorageInterface
      */
     public function createService(ServiceLocatorInterface $serviceLocator)

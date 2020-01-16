@@ -8,7 +8,7 @@
 
 namespace BjyAuthorizeTest\Provider\Role;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Provider\Role\Config;
 
 /**
@@ -16,7 +16,7 @@ use BjyAuthorize\Provider\Role\Config;
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class ConfigTest extends PHPUnit_Framework_TestCase
+class ConfigTest extends TestCase
 {
     /**
      * @covers \BjyAuthorize\Provider\Role\Config::__construct
@@ -26,19 +26,19 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     public function testConstructor()
     {
         $config = new Config(
-            array(
-                'role1' => array(),
+            [
+                'role1' => [],
                 'role2',
-                'role3' => array(
-                    'children' => array('role4'),
-                ),
-                'role5' => array(
-                    'children' => array(
+                'role3' => [
+                    'children' => ['role4'],
+                ],
+                'role5' => [
+                    'children' => [
                         'role6',
-                        'role7' => array(),
-                    ),
-                ),
-            )
+                        'role7' => [],
+                    ],
+                ],
+            ]
         );
 
         $roles = $config->getRoles();
@@ -50,7 +50,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
             $this->assertInstanceOf('BjyAuthorize\Acl\Role', $role);
             $this->assertContains(
                 $role->getRoleId(),
-                array('role1', 'role2', 'role3', 'role4', 'role5', 'role6', 'role7')
+                ['role1', 'role2', 'role3', 'role4', 'role5', 'role6', 'role7']
             );
 
             if ('role4' === $role->getRoleId()) {

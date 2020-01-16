@@ -10,7 +10,7 @@
 
 namespace BjyAuthorizeTest\Service;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Service\UnauthorizedStrategyServiceFactory;
 
 /**
@@ -18,7 +18,7 @@ use BjyAuthorize\Service\UnauthorizedStrategyServiceFactory;
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class UnauthorizedStrategyServiceFactoryTest extends PHPUnit_Framework_TestCase
+class UnauthorizedStrategyServiceFactoryTest extends TestCase
 {
     /**
      * @covers \BjyAuthorize\Service\UnauthorizedStrategyServiceFactory::createService
@@ -26,10 +26,10 @@ class UnauthorizedStrategyServiceFactoryTest extends PHPUnit_Framework_TestCase
     public function testCreateService()
     {
         $factory          = new UnauthorizedStrategyServiceFactory();
-        $serviceLocator   = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
-        $config           = array(
+        $serviceLocator   = $this->createMock('Laminas\\ServiceManager\\ServiceLocatorInterface');
+        $config           = [
             'template' => 'foo/bar',
-        );
+        ];
 
         $serviceLocator
             ->expects($this->any())

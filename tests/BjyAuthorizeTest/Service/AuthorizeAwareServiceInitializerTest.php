@@ -10,7 +10,7 @@
 
 namespace BjyAuthorizeTest\Service;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Service\AuthorizeAwareServiceInitializer;
 
 /**
@@ -18,7 +18,7 @@ use BjyAuthorize\Service\AuthorizeAwareServiceInitializer;
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class AuthorizeAwareServiceInitializerTest extends PHPUnit_Framework_TestCase
+class AuthorizeAwareServiceInitializerTest extends TestCase
 {
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
@@ -40,8 +40,8 @@ class AuthorizeAwareServiceInitializerTest extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        $this->authorize   = $this->getMock('BjyAuthorize\\Service\\Authorize', array(), array(), '', false);
-        $this->locator     = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
+        $this->authorize   = $this->getMockBuilder('BjyAuthorize\\Service\\Authorize')->disableOriginalConstructor()->getMock();
+        $this->locator     = $this->createMock('Laminas\\ServiceManager\\ServiceLocatorInterface');
         $this->initializer = new AuthorizeAwareServiceInitializer();
 
         $this->locator->expects($this->any())->method('get')->will($this->returnValue($this->authorize));
@@ -52,7 +52,7 @@ class AuthorizeAwareServiceInitializerTest extends PHPUnit_Framework_TestCase
      */
     public function testInitializeWithAuthorizeAwareObject()
     {
-        $awareObject = $this->getMock('BjyAuthorize\\Service\\AuthorizeAwareInterface');
+        $awareObject = $this->createMock('BjyAuthorize\\Service\\AuthorizeAwareInterface');
 
         $awareObject->expects($this->once())->method('setAuthorizeService')->with($this->authorize);
 
@@ -64,7 +64,7 @@ class AuthorizeAwareServiceInitializerTest extends PHPUnit_Framework_TestCase
      */
     public function testInitializeWithSimpleObject()
     {
-        $awareObject = $this->getMock('stdClass', array('setAuthorizeService'));
+        $awareObject = $this->getMockBuilder('stdClass')->setMethods(['setAuthorizeService'])->getMock();
 
         $awareObject->expects($this->never())->method('setAuthorizeService');
 

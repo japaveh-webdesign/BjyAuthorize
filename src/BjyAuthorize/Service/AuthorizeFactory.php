@@ -9,8 +9,8 @@
 namespace BjyAuthorize\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\FactoryInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Factory responsible of building the {@see \BjyAuthorize\Service\Authorize} service
@@ -27,7 +27,7 @@ class AuthorizeFactory implements FactoryInterface
     /**
      * {@inheritDoc}
      *
-     * @return \BjyAuthorize\Service\Authorize
+     * @return Authorize
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {

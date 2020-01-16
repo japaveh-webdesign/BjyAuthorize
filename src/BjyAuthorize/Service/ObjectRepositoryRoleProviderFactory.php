@@ -10,9 +10,10 @@ namespace BjyAuthorize\Service;
 
 use BjyAuthorize\Exception\InvalidArgumentException;
 use BjyAuthorize\Provider\Role\ObjectRepositoryProvider;
+use Doctrine\Common\Persistence\ObjectManager;
 use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\FactoryInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Factory responsible of instantiating {@see \BjyAuthorize\Provider\Role\ObjectRepositoryProvider}
@@ -42,7 +43,7 @@ class ObjectRepositoryRoleProviderFactory implements FactoryInterface
             throw new InvalidArgumentException('object_manager not set in the bjyauthorize role_providers config.');
         }
 
-        /* @var $objectManager \Doctrine\Common\Persistence\ObjectManager */
+        /* @var $objectManager ObjectManager */
         $objectManager = $container->get($providerConfig['object_manager']);
 
         return new ObjectRepositoryProvider($objectManager->getRepository($providerConfig['role_entity_class']));
@@ -51,7 +52,7 @@ class ObjectRepositoryRoleProviderFactory implements FactoryInterface
     /**
      * {@inheritDoc}
      *
-     * @return \BjyAuthorize\Provider\Role\ObjectRepositoryProvider
+     * @return ObjectRepositoryProvider
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {

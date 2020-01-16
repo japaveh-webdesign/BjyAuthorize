@@ -17,7 +17,7 @@ namespace BjyAuthorize\Service;
 interface AuthorizeAwareInterface
 {
     /**
-     * @param \BjyAuthorize\Service\Authorize $auth
+     * @param Authorize $auth
      *
      * @return void
      */

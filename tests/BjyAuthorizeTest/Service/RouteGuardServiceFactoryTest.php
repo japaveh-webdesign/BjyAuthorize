@@ -10,7 +10,7 @@
 
 namespace BjyAuthorizeTest\Service;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Service\RouteGuardServiceFactory;
 
 /**
@@ -18,7 +18,7 @@ use BjyAuthorize\Service\RouteGuardServiceFactory;
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class RouteGuardServiceFactoryTest extends PHPUnit_Framework_TestCase
+class RouteGuardServiceFactoryTest extends TestCase
 {
     /**
      * @covers \BjyAuthorize\Service\RouteGuardServiceFactory::createService
@@ -26,12 +26,12 @@ class RouteGuardServiceFactoryTest extends PHPUnit_Framework_TestCase
     public function testCreateService()
     {
         $factory          = new RouteGuardServiceFactory();
-        $serviceLocator   = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
-        $config           = array(
-            'guards' => array(
-                'BjyAuthorize\\Guard\\Route' => array(),
-            ),
-        );
+        $serviceLocator   = $this->createMock('Laminas\\ServiceManager\\ServiceLocatorInterface');
+        $config           = [
+            'guards' => [
+                'BjyAuthorize\\Guard\\Route' => [],
+            ],
+        ];
 
         $serviceLocator
             ->expects($this->any())

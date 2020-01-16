@@ -2,7 +2,7 @@
 /**
  * BjyAuthorize Module (https://github.com/bjyoungblood/BjyAuthorize)
  *
- * @link    https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
+ * @link https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
  * @license http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -14,31 +14,26 @@ use BjyAuthorize\Provider\Identity\ProviderInterface as IdentityProvider;
 use BjyAuthorize\Provider\Resource\ProviderInterface as ResourceProvider;
 use BjyAuthorize\Provider\Role\ProviderInterface as RoleProvider;
 use BjyAuthorize\Provider\Rule\ProviderInterface as RuleProvider;
+use Closure;
 use Interop\Container\ContainerInterface;
-use Zend\Cache\Storage\StorageInterface;
-use Zend\EventManager\EventManager;
-use Zend\EventManager\EventManagerAwareInterface;
-use Zend\EventManager\EventManagerInterface;
-use Zend\Permissions\Acl\Acl;
-use Zend\Permissions\Acl\Exception\InvalidArgumentException;
-use Zend\Permissions\Acl\Resource\GenericResource;
-use Zend\Permissions\Acl\Resource\ResourceInterface;
+use Laminas\Cache\Storage\StorageInterface;
+use Laminas\Permissions\Acl\Acl;
+use Laminas\Permissions\Acl\Exception\InvalidArgumentException;
+use Laminas\Permissions\Acl\Resource\GenericResource;
+use Laminas\Permissions\Acl\Resource\ResourceInterface;
+use Laminas\Permissions\Acl\Role\RoleInterface;
+use Traversable;
 
 /**
  * Authorize service
  *
  * @author Ben Youngblood <bx.youngblood@gmail.com>
  */
-class Authorize implements EventManagerAwareInterface
+class Authorize
 {
-    const TYPE_ALLOW = 'allow';
+    public const TYPE_ALLOW = 'allow';
 
-    const TYPE_DENY = 'deny';
-
-    /**
-     * @var EventManagerInterface
-     */
-    protected $eventManager;
+    public const TYPE_DENY = 'deny';
 
     /**
      * @var Acl
@@ -71,14 +66,14 @@ class Authorize implements EventManagerAwareInterface
     protected $guards = [];
 
     /**
-     * @var \Closure|null
+     * @var Closure|null
      */
     protected $loaded;
 
     /**
-     * @var \Zend\ServiceManager\ServiceLocatorInterface
+     * @var ContainerInterface
      */
-    protected $container;
+    protected $serviceLocator;
 
     /**
      * @var array
@@ -86,300 +81,54 @@ class Authorize implements EventManagerAwareInterface
     protected $config;
 
     /**
-     * Authorize constructor.
-     *
-     * @param array              $config
-     * @param ContainerInterface $container
+     * @param array $config
+     * @param ContainerInterface $serviceLocator
      */
-    public function __construct(array $config, ContainerInterface $container)
+    public function __construct(array $config, ContainerInterface $serviceLocator)
     {
-        $this->config    = $config;
-        $this->container = $container;
-        $that            = $this;
-        $this->loaded    = function () use ($that) {
+        $this->config = $config;
+        $this->serviceLocator = $serviceLocator;
+        $that = $this;
+        $this->loaded = function () use ($that) {
             $that->load();
         };
     }
 
     /**
-     * @deprecated this method will be removed in BjyAuthorize 2.0.x
-     *
-     * @param RoleProvider $provider
-     *
-     * @return self
-     */
-    public function addRoleProvider(RoleProvider $provider)
-    {
-        $this->loaded && $this->loaded->__invoke();
-
-        $this->roleProviders[] = $provider;
-
-        return $this;
-    }
-
-    /**
-     * @deprecated this method will be removed in BjyAuthorize 2.0.x
-     *
-     * @param ResourceProvider $provider
-     *
-     * @return self
-     */
-    public function addResourceProvider(ResourceProvider $provider)
-    {
-        $this->loaded && $this->loaded->__invoke();
-
-        $this->resourceProviders[] = $provider;
-
-        return $this;
-    }
-
-    /**
-     * @deprecated this method will be removed in BjyAuthorize 2.0.x
-     *
-     * @param RuleProvider $provider
-     *
-     * @return self
-     */
-    public function addRuleProvider(RuleProvider $provider)
-    {
-        $this->loaded && $this->loaded->__invoke();
-
-        $this->ruleProviders[] = $provider;
-
-        return $this;
-    }
-
-    /**
-     * @deprecated this method will be removed in BjyAuthorize 2.0.x
-     *
-     * @param IdentityProvider $provider
-     *
-     * @return self
-     */
-    public function setIdentityProvider(IdentityProvider $provider)
-    {
-        $this->loaded && $this->loaded->__invoke();
-
-        $this->identityProvider = $provider;
-
-        return $this;
-    }
-
-    /**
-     * @deprecated this method will be removed in BjyAuthorize 2.0.x
-     *
-     * @return IdentityProvider
-     */
-    public function getIdentityProvider()
-    {
-        $this->loaded && $this->loaded->__invoke();
-
-        return $this->identityProvider;
-    }
-
-    /**
-     * @deprecated this method will be removed in BjyAuthorize 2.0.x
-     *
-     * @param GuardInterface $guard
-     *
-     * @return self
-     */
-    public function addGuard(GuardInterface $guard)
-    {
-        $this->loaded && $this->loaded->__invoke();
-
-        $this->guards[] = $guard;
-
-        if ($guard instanceof ResourceProvider) {
-            $this->addResourceProvider($guard);
-        }
-
-        if ($guard instanceof RuleProvider) {
-            $this->addRuleProvider($guard);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @deprecated this method will be removed in BjyAuthorize 1.4.x+,
-     *             please retrieve the guards from the `BjyAuthorize\Guards` service
-     *
-     * @return GuardInterface[]
-     */
-    public function getGuards()
-    {
-        $this->loaded && $this->loaded->__invoke();
-
-        return $this->guards;
-    }
-
-    /**
-     * @deprecated this method will be removed in BjyAuthorize 1.4.x+,
-     *             please retrieve the identity from the
-     *             `BjyAuthorize\Provider\Identity\ProviderInterface` service
-     *
-     * @return string
-     */
-    public function getIdentity()
-    {
-        $this->loaded && $this->loaded->__invoke();
-
-        return 'bjyauthorize-identity';
-    }
-
-    /**
-     * @return Acl
-     */
-    public function getAcl()
-    {
-        $this->loaded && $this->loaded->__invoke();
-
-
-        return $this->acl;
-    }
-
-    /**
-     * @param string|ResourceInterface $resource
-     * @param string                   $privilege
-     *
-     * @return bool
-     */
-    public function isAllowed($resource, $privilege = null)
-    {
-        $this->loaded && $this->loaded->__invoke();
-
-        try {
-            return $this->acl->isAllowed($this->getIdentity(), $resource, $privilege);
-        } catch (InvalidArgumentException $e) {
-            return false;
-        }
-    }
-
-    /**
      * Initializes the service
      *
+     * @return void
      * @internal
      *
-     * @return void
      */
     public function load()
     {
         if (null === $this->loaded) {
-
             return;
         }
 
         $this->loaded = null;
 
         /** @var $cache StorageInterface */
-        $cache     = $this->container->get('BjyAuthorize\Cache');
-        $success   = false;
-        $this->acl = $cache->getItem($this->config['cache_key'], $success);
+        $cache = $this->serviceLocator->get('BjyAuthorize\Cache');
 
-        if ( ! ($this->acl instanceof Acl) || ! $success) {
+        /** @var $cacheKeyGenerator callable */
+        $cacheKeyGenerator = $this->serviceLocator->get('BjyAuthorize\CacheKeyGenerator');
+        $cacheKey = $cacheKeyGenerator();
+
+        $success = false;
+        $this->acl = $cache->getItem($cacheKey, $success);
+
+        if (!($this->acl instanceof Acl) || !$success) {
             $this->loadAcl();
-            $cache->setItem($this->config['cache_key'], $this->acl);
+            $cache->setItem($cacheKey, $this->acl);
         }
 
-//        $this->eventManager->trigger('acl.loaded', $this, ['acl' => $this->acl]);
-
-        $this->setIdentityProvider($this->container->get('BjyAuthorize\Provider\Identity\ProviderInterface'));
+        $this->setIdentityProvider($this->serviceLocator->get('BjyAuthorize\Provider\Identity\ProviderInterface'));
 
         $parentRoles = $this->getIdentityProvider()->getIdentityRoles();
 
         $this->acl->addRole($this->getIdentity(), $parentRoles);
-    }
-
-    /**
-     * @deprecated this method will be removed in BjyAuthorize 2.0.x
-     *
-     * @param \Zend\Permissions\Acl\Role\RoleInterface[] $roles
-     */
-    protected function addRoles($roles)
-    {
-        if ( ! is_array($roles)) {
-            $roles = [$roles];
-        }
-
-        /* @var $role Role */
-        foreach ($roles as $role) {
-            if ($this->acl->hasRole($role)) {
-                continue;
-            }
-
-            if ($role->getParent() !== null) {
-                $this->addRoles([$role->getParent()]);
-                $this->acl->addRole($role, $role->getParent());
-            } elseif ( ! $this->acl->hasRole($role)) {
-                $this->acl->addRole($role);
-            }
-        }
-    }
-
-    /**
-     * @deprecated this method will be removed in BjyAuthorize 2.0.x
-     *
-     * @param string[]|\Zend\Permissions\Acl\Resource\ResourceInterface[] $resources
-     * @param mixed|null                                                  $parent
-     */
-    protected function loadResource(array $resources, $parent = null)
-    {
-        foreach ($resources as $key => $value) {
-            if (is_string($key)) {
-                $key = new GenericResource($key);
-            } elseif (is_int($key)) {
-                $key = new GenericResource($value);
-            }
-
-            if (is_array($value)) {
-                $this->acl->addResource($key, $parent);
-                $this->loadResource($value, $key);
-            } elseif ( ! $this->acl->hasResource($key)) {
-                $this->acl->addResource($key, $parent);
-            }
-        }
-    }
-
-    /**
-     * @deprecated this method will be removed in BjyAuthorize 2.0.x
-     *
-     * @param mixed $rule
-     * @param mixed $type
-     *
-     * @throws \InvalidArgumentException
-     */
-    protected function loadRule(array $rule, $type)
-    {
-        $privileges = $assertion = null;
-        $ruleSize   = count($rule);
-
-        if (4 === $ruleSize) {
-            list($roles, $resources, $privileges, $assertion) = $rule;
-
-            $assertion = $this->container->get($assertion);
-        } elseif (3 === $ruleSize) {
-            list($roles, $resources, $privileges) = $rule;
-        } elseif (2 === $ruleSize) {
-            list($roles, $resources) = $rule;
-        } else {
-            throw new \InvalidArgumentException('Invalid rule definition: ' . print_r($rule, true));
-        }
-
-        if (is_string($assertion)) {
-            $assertion = $this->container->get($assertion);
-        }
-
-        if ( ! is_callable($assertion)) {
-            $assertion = null;
-        }
-
-
-        if (static::TYPE_ALLOW === $type) {
-            $this->acl->allow($roles, $resources, $privileges, $assertion);
-        } else {
-            $this->acl->deny($roles, $resources, $privileges, $assertion);
-        }
     }
 
     /**
@@ -389,19 +138,19 @@ class Authorize implements EventManagerAwareInterface
     {
         $this->acl = new Acl();
 
-        foreach ($this->container->get('BjyAuthorize\RoleProviders') as $provider) {
+        foreach ($this->serviceLocator->get('BjyAuthorize\RoleProviders') as $provider) {
             $this->addRoleProvider($provider);
         }
 
-        foreach ($this->container->get('BjyAuthorize\ResourceProviders') as $provider) {
+        foreach ($this->serviceLocator->get('BjyAuthorize\ResourceProviders') as $provider) {
             $this->addResourceProvider($provider);
         }
 
-        foreach ($this->container->get('BjyAuthorize\RuleProviders') as $provider) {
+        foreach ($this->serviceLocator->get('BjyAuthorize\RuleProviders') as $provider) {
             $this->addRuleProvider($provider);
         }
 
-        foreach ($this->container->get('BjyAuthorize\Guards') as $guard) {
+        foreach ($this->serviceLocator->get('BjyAuthorize\Guards') as $guard) {
             $this->addGuard($guard);
         }
 
@@ -430,25 +179,251 @@ class Authorize implements EventManagerAwareInterface
     }
 
     /**
-     * @param  EventManagerInterface $eventManager
+     * @param RoleProvider $provider
      *
-     * @return void
+     * @return self
+     * @deprecated this method will be removed in BjyAuthorize 2.0.x
+     *
      */
-    public function setEventManager(EventManagerInterface $eventManager)
+    public function addRoleProvider(RoleProvider $provider)
     {
-        $this->eventManager = $eventManager;
+        $this->loaded && $this->loaded->__invoke();
+
+        $this->roleProviders[] = $provider;
+
+        return $this;
     }
 
     /**
-     * @return EventManagerInterface
+     * @param ResourceProvider $provider
+     *
+     * @return self
+     * @deprecated this method will be removed in BjyAuthorize 2.0.x
+     *
      */
-    public function getEventManager()
+    public function addResourceProvider(ResourceProvider $provider)
     {
-        if (null === $this->eventManager) {
-            $this->setEventManager(new EventManager());
+        $this->loaded && $this->loaded->__invoke();
+
+        $this->resourceProviders[] = $provider;
+
+        return $this;
+    }
+
+    /**
+     * @param RuleProvider $provider
+     *
+     * @return self
+     * @deprecated this method will be removed in BjyAuthorize 2.0.x
+     *
+     */
+    public function addRuleProvider(RuleProvider $provider)
+    {
+        $this->loaded && $this->loaded->__invoke();
+
+        $this->ruleProviders[] = $provider;
+
+        return $this;
+    }
+
+    /**
+     * @param GuardInterface $guard
+     *
+     * @return self
+     * @deprecated this method will be removed in BjyAuthorize 2.0.x
+     *
+     */
+    public function addGuard(GuardInterface $guard)
+    {
+        $this->loaded && $this->loaded->__invoke();
+
+        $this->guards[] = $guard;
+
+        if ($guard instanceof ResourceProvider) {
+            $this->addResourceProvider($guard);
         }
 
-        return $this->eventManager;
+        if ($guard instanceof RuleProvider) {
+            $this->addRuleProvider($guard);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param RoleInterface[] $roles
+     * @deprecated this method will be removed in BjyAuthorize 2.0.x
+     *
+     */
+    protected function addRoles($roles)
+    {
+        if (!is_array($roles) && !($roles instanceof Traversable)) {
+            $roles = [$roles];
+        }
+
+        /* @var $role Role */
+        foreach ($roles as $role) {
+            if ($this->acl->hasRole($role)) {
+                continue;
+            }
+
+            if ($role->getParent() !== null) {
+                $this->addRoles([$role->getParent()]);
+                $this->acl->addRole($role, $role->getParent());
+            } elseif (!$this->acl->hasRole($role)) {
+                $this->acl->addRole($role);
+            }
+        }
+    }
+
+    /**
+     * @param string[]|ResourceInterface[] $resources
+     * @param mixed|null $parent
+     * @deprecated this method will be removed in BjyAuthorize 2.0.x
+     *
+     */
+    protected function loadResource($resources, $parent = null)
+    {
+        if (!is_array($resources) && !($resources instanceof Traversable)) {
+            throw new \InvalidArgumentException('Resources argument must be traversable: ' . print_r($resources, true));
+        }
+
+        foreach ($resources as $key => $value) {
+            if ($value instanceof ResourceInterface) {
+                $key = $value;
+            } elseif (is_string($key)) {
+                $key = new GenericResource($key);
+            } elseif (is_int($key)) {
+                $key = new GenericResource($value);
+            }
+
+            if (is_array($value) || ($value instanceof Traversable)) {
+                $this->acl->addResource($key, $parent);
+                $this->loadResource($value, $key);
+            } elseif (!$this->acl->hasResource($key)) {
+                $this->acl->addResource($key, $parent);
+            }
+        }
+    }
+
+    /**
+     * @param mixed $rule
+     * @param mixed $type
+     *
+     * @throws \InvalidArgumentException
+     * @deprecated this method will be removed in BjyAuthorize 2.0.x
+     *
+     */
+    protected function loadRule(array $rule, $type)
+    {
+        $privileges = $assertion = null;
+        $ruleSize = count($rule);
+
+        if (4 === $ruleSize) {
+            [$roles, $resources, $privileges, $assertion] = $rule;
+            $assertion = $this->serviceLocator->get($assertion);
+        } elseif (3 === $ruleSize) {
+            [$roles, $resources, $privileges] = $rule;
+        } elseif (2 === $ruleSize) {
+            [$roles, $resources] = $rule;
+        } else {
+            throw new \InvalidArgumentException('Invalid rule definition: ' . print_r($rule, true));
+        }
+
+        if (is_string($assertion)) {
+            $assertion = $this->serviceLocator->get($assertion);
+        }
+
+        if (!is_callable($assertion)) {
+            $assertion = null;
+        }
+
+        if (static::TYPE_ALLOW === $type) {
+            $this->acl->allow($roles, $resources, $privileges, $assertion);
+        } else {
+            $this->acl->deny($roles, $resources, $privileges, $assertion);
+        }
+    }
+
+    /**
+     * @return IdentityProvider
+     * @deprecated this method will be removed in BjyAuthorize 2.0.x
+     *
+     */
+    public function getIdentityProvider()
+    {
+        $this->loaded && $this->loaded->__invoke();
+
+        return $this->identityProvider;
+    }
+
+    /**
+     * @param IdentityProvider $provider
+     *
+     * @return self
+     * @deprecated this method will be removed in BjyAuthorize 2.0.x
+     *
+     */
+    public function setIdentityProvider(IdentityProvider $provider)
+    {
+        $this->loaded && $this->loaded->__invoke();
+
+        $this->identityProvider = $provider;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     * @deprecated this method will be removed in BjyAuthorize 1.4.x+,
+     *             please retrieve the identity from the
+     *             `BjyAuthorize\Provider\Identity\ProviderInterface` service
+     *
+     */
+    public function getIdentity()
+    {
+        $this->loaded && $this->loaded->__invoke();
+
+        return 'bjyauthorize-identity';
+    }
+
+    /**
+     * @return GuardInterface[]
+     * @deprecated this method will be removed in BjyAuthorize 1.4.x+,
+     *             please retrieve the guards from the `BjyAuthorize\Guards` service
+     *
+     */
+    public function getGuards()
+    {
+        $this->loaded && $this->loaded->__invoke();
+
+        return $this->guards;
+    }
+
+    /**
+     * @return Acl
+     */
+    public function getAcl()
+    {
+        $this->loaded && $this->loaded->__invoke();
+
+        return $this->acl;
+    }
+
+    /**
+     * @param string|ResourceInterface $resource
+     * @param string $privilege
+     *
+     * @return bool
+     */
+    public function isAllowed($resource, $privilege = null)
+    {
+        $this->loaded && $this->loaded->__invoke();
+
+        try {
+            return $this->acl->isAllowed($this->getIdentity(), $resource, $privilege);
+        } catch (InvalidArgumentException $e) {
+            return false;
+        }
     }
 }
-

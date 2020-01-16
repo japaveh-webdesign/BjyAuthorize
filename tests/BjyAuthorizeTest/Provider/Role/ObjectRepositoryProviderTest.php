@@ -9,7 +9,7 @@
 namespace BjyAuthorizeTest\Provider\Role;
 
 use BjyAuthorize\Acl\Role;
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Provider\Role\ObjectRepositoryProvider;
 
 /**
@@ -17,7 +17,7 @@ use BjyAuthorize\Provider\Role\ObjectRepositoryProvider;
  *
  * @author Tom Oram <tom@scl.co.uk>
  */
-class ObjectRepositoryProviderTest extends PHPUnit_Framework_TestCase
+class ObjectRepositoryProviderTest extends TestCase
 {
     /**
      * @var \BjyAuthorize\Provider\Role\ObjectRepositoryProvider
@@ -34,7 +34,7 @@ class ObjectRepositoryProviderTest extends PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->repository = $this->getMock('Doctrine\Common\Persistence\ObjectRepository');
+        $this->repository = $this->createMock('Doctrine\Common\Persistence\ObjectRepository');
         $this->provider = new ObjectRepositoryProvider($this->repository);
     }
 
@@ -46,7 +46,7 @@ class ObjectRepositoryProviderTest extends PHPUnit_Framework_TestCase
      */
     private function createRoleMock($name, $parent)
     {
-        $role = $this->getMock('BjyAuthorize\Acl\HierarchicalRoleInterface');
+        $role = $this->createMock('BjyAuthorize\Acl\HierarchicalRoleInterface');
         $role->expects($this->atLeastOnce())
             ->method('getRoleId')
             ->will($this->returnValue($name));
@@ -56,7 +56,6 @@ class ObjectRepositoryProviderTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue($parent));
 
         return $role;
-
     }
 
     /**
@@ -65,21 +64,21 @@ class ObjectRepositoryProviderTest extends PHPUnit_Framework_TestCase
     public function testGetRolesWithNoParents()
     {
         // Set up mocks
-        $roles = array(
+        $roles = [
             new \stdClass(), // to be skipped
             $this->createRoleMock('role1', null),
             $this->createRoleMock('role2', null)
-        );
+        ];
 
         $this->repository->expects($this->once())
             ->method('findAll')
             ->will($this->returnValue($roles));
 
         // Set up the expected outcome
-        $expects = array(
+        $expects = [
             new Role('role1', null),
             new Role('role2', null),
-        );
+        ];
 
         $this->assertEquals($expects, $this->provider->getRoles());
     }
@@ -91,11 +90,11 @@ class ObjectRepositoryProviderTest extends PHPUnit_Framework_TestCase
     {
         // Setup mocks
         $role1 = $this->createRoleMock('role1', null);
-        $roles = array(
+        $roles = [
             $role1,
             $this->createRoleMock('role2', null),
             $this->createRoleMock('role3', $role1)
-        );
+        ];
 
         $this->repository->expects($this->once())
             ->method('findAll')
@@ -103,11 +102,11 @@ class ObjectRepositoryProviderTest extends PHPUnit_Framework_TestCase
 
         // Set up the expected outcome
         $expectedRole1 = new Role('role1', null);
-        $expects = array(
+        $expects = [
             $expectedRole1,
             new Role('role2', null),
             new Role('role3', $expectedRole1),
-        );
+        ];
 
         $this->assertEquals($expects, $this->provider->getRoles());
     }

@@ -15,5 +15,5 @@ namespace BjyAuthorize\Service;
  */
 class RoleProvidersServiceFactory extends BaseProvidersServiceFactory
 {
-    const PROVIDER_SETTING = 'role_providers';
+    public const PROVIDER_SETTING = 'role_providers';
 }

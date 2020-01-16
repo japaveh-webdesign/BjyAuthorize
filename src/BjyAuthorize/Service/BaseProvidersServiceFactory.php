@@ -9,8 +9,8 @@
 namespace BjyAuthorize\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\FactoryInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Base factory responsible of instantiating providers
@@ -19,7 +19,7 @@ use Zend\ServiceManager\ServiceLocatorInterface;
  */
 abstract class BaseProvidersServiceFactory implements FactoryInterface
 {
-    const PROVIDER_SETTING = 'providers';
+    public const PROVIDER_SETTING = 'providers';
 
     /**
      * {@inheritDoc}
@@ -29,7 +29,7 @@ abstract class BaseProvidersServiceFactory implements FactoryInterface
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $config = $container->get('BjyAuthorize\Config');
-        $providers = array();
+        $providers = [];
 
         foreach ($config[static::PROVIDER_SETTING] as $providerName => $providerConfig) {
             if ($container->has($providerName)) {

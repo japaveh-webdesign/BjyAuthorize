@@ -18,12 +18,12 @@ class Config implements ProviderInterface
     /**
      * @var array
      */
-    protected $rules = array();
+    protected $rules = [];
 
     /**
      * @param array $config
      */
-    public function __construct(array $config = array())
+    public function __construct(array $config = [])
     {
         $this->rules = $config;
     }

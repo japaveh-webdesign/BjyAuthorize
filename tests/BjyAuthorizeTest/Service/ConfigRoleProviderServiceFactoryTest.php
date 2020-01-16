@@ -10,7 +10,7 @@
 
 namespace BjyAuthorizeTest\Service;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Service\ConfigRoleProviderServiceFactory;
 
 /**
@@ -18,7 +18,7 @@ use BjyAuthorize\Service\ConfigRoleProviderServiceFactory;
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class ConfigRoleProviderServiceFactoryTest extends PHPUnit_Framework_TestCase
+class ConfigRoleProviderServiceFactoryTest extends TestCase
 {
     /**
      * @covers \BjyAuthorize\Service\ConfigRoleProviderServiceFactory::createService
@@ -26,12 +26,12 @@ class ConfigRoleProviderServiceFactoryTest extends PHPUnit_Framework_TestCase
     public function testCreateService()
     {
         $factory          = new ConfigRoleProviderServiceFactory();
-        $serviceLocator   = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
-        $config           = array(
-            'role_providers' => array(
-                'BjyAuthorize\Provider\Role\Config' => array(),
-            ),
-        );
+        $serviceLocator   = $this->createMock('Laminas\\ServiceManager\\ServiceLocatorInterface');
+        $config           = [
+            'role_providers' => [
+                'BjyAuthorize\Provider\Role\Config' => [],
+            ],
+        ];
 
         $serviceLocator
             ->expects($this->any())

@@ -9,9 +9,10 @@
 namespace BjyAuthorize\Collector;
 
 use BjyAuthorize\Provider\Identity\ProviderInterface;
+use Laminas\Mvc\MvcEvent;
+use Laminas\Permissions\Acl\Role\RoleInterface;
 use Serializable;
-use Zend\Mvc\MvcEvent;
-use Zend\Permissions\Acl\Role\RoleInterface;
+use Traversable;
 use ZendDeveloperTools\Collector\CollectorInterface;
 
 /**
@@ -21,22 +22,22 @@ use ZendDeveloperTools\Collector\CollectorInterface;
  */
 class RoleCollector implements CollectorInterface, Serializable
 {
-    const NAME     = 'bjy_authorize_role_collector';
+    public const NAME = 'bjy_authorize_role_...;}
 
-    const PRIORITY = 150;
+    public const PRIORITY = 150;
 
     /**
      * @var array|string[] collected role ids
      */
-    protected $collectedRoles = array();
+    protected $collectedRoles = [];
 
     /**
-     * @var \BjyAuthorize\Provider\Identity\ProviderInterface|null
+     * @var ProviderInterface|null
      */
     protected $identityProvider;
 
     /**
-     * @param \BjyAuthorize\Provider\Identity\ProviderInterface $identityProvider
+     * @param ProviderInterface $identityProvider
      */
     public function __construct(ProviderInterface $identityProvider)
     {
@@ -64,14 +65,14 @@ class RoleCollector implements CollectorInterface, Serializable
      */
     public function collect(MvcEvent $mvcEvent)
     {
-        if (! $this->identityProvider) {
+        if (!$this->identityProvider) {
             return;
         }
 
         $roles = $this->identityProvider->getIdentityRoles();
 
-        if (! is_array($roles) && ! $roles instanceof \Traversable) {
-            $roles = (array) $roles;
+        if (!is_array($roles) && !$roles instanceof Traversable) {
+            $roles = (array)$roles;
         }
 
         foreach ($roles as $role) {
@@ -80,7 +81,7 @@ class RoleCollector implements CollectorInterface, Serializable
             }
 
             if ($role) {
-                $this->collectedRoles[] = (string) $role;
+                $this->collectedRoles[] = (string)$role;
             }
         }
     }

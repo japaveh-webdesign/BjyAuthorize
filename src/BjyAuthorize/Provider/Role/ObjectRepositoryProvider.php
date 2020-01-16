@@ -8,10 +8,10 @@
 
 namespace BjyAuthorize\Provider\Role;
 
-use BjyAuthorize\Acl\Role;
 use BjyAuthorize\Acl\HierarchicalRoleInterface;
+use BjyAuthorize\Acl\Role;
 use Doctrine\Common\Persistence\ObjectRepository;
-use Zend\Permissions\Acl\Role\RoleInterface;
+use Laminas\Permissions\Acl\Role\RoleInterface;
 
 /**
  * Role provider based on a {@see \Doctrine\Common\Persistence\ObjectRepository}
@@ -21,12 +21,12 @@ use Zend\Permissions\Acl\Role\RoleInterface;
 class ObjectRepositoryProvider implements ProviderInterface
 {
     /**
-     * @var \Doctrine\Common\Persistence\ObjectRepository
+     * @var ObjectRepository
      */
     protected $objectRepository;
 
     /**
-     * @param \Doctrine\Common\Persistence\ObjectRepository $objectRepository
+     * @param ObjectRepository $objectRepository
      */
     public function __construct(ObjectRepository $objectRepository)
     {
@@ -39,7 +39,7 @@ class ObjectRepositoryProvider implements ProviderInterface
     public function getRoles()
     {
         $result = $this->objectRepository->findAll();
-        $roles  = array();
+        $roles = [];
 
         // Pass One: Build each object
         foreach ($result as $role) {
@@ -58,7 +58,7 @@ class ObjectRepositoryProvider implements ProviderInterface
         }
 
         // Pass Two: Re-inject parent objects to preserve hierarchy
-        /* @var $roleObj \BjyAuthorize\Acl\Role */
+        /* @var $roleObj Role */
         foreach ($roles as $roleObj) {
             $parentRoleObj = $roleObj->getParent();
 

@@ -8,6 +8,8 @@
 
 namespace BjyAuthorize\Provider\Resource;
 
+use Laminas\Permissions\Acl\Resource\ResourceInterface;
+
 /**
  * Resource provider interface, provides existing resources list
  *
@@ -16,7 +18,7 @@ namespace BjyAuthorize\Provider\Resource;
 interface ProviderInterface
 {
     /**
-     * @return \Zend\Permissions\Acl\Resource\ResourceInterface[]
+     * @return ResourceInterface[]
      */
     public function getResources();
 }

@@ -10,7 +10,7 @@
 
 namespace BjyAuthorizeTest\Service;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Service\IdentityProviderServiceFactory;
 
 /**
@@ -18,7 +18,7 @@ use BjyAuthorize\Service\IdentityProviderServiceFactory;
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class IdentityProviderServiceFactoryTest extends PHPUnit_Framework_TestCase
+class IdentityProviderServiceFactoryTest extends TestCase
 {
     /**
      * @covers \BjyAuthorize\Service\IdentityProviderServiceFactory::createService
@@ -26,9 +26,9 @@ class IdentityProviderServiceFactoryTest extends PHPUnit_Framework_TestCase
     public function testCreateService()
     {
         $factory          = new IdentityProviderServiceFactory();
-        $serviceLocator   = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
-        $identityProvider = $this->getMock('BjyAuthorize\\Provider\\Identity\\ProviderInterface');
-        $config           = array('identity_provider' => 'foo');
+        $serviceLocator   = $this->createMock('Laminas\\ServiceManager\\ServiceLocatorInterface');
+        $identityProvider = $this->createMock('BjyAuthorize\\Provider\\Identity\\ProviderInterface');
+        $config           = ['identity_provider' => 'foo'];
 
         $serviceLocator
             ->expects($this->any())

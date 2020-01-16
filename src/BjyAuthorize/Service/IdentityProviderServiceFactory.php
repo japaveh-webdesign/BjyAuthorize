@@ -8,9 +8,10 @@
 
 namespace BjyAuthorize\Service;
 
+use BjyAuthorize\Provider\Identity\ProviderInterface;
 use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\FactoryInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Factory responsible of building {@see \BjyAuthorize\Provider\Identity\ProviderInterface}
@@ -27,7 +28,7 @@ class IdentityProviderServiceFactory implements FactoryInterface
     /**
      * {@inheritDoc}
      *
-     * @return \BjyAuthorize\Provider\Identity\ProviderInterface
+     * @return ProviderInterface
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {

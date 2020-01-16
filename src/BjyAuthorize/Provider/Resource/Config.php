@@ -8,6 +8,8 @@
 
 namespace BjyAuthorize\Provider\Resource;
 
+use Laminas\Permissions\Acl\Resource\ResourceInterface;
+
 /**
  * Array-based resources list
  *
@@ -16,14 +18,14 @@ namespace BjyAuthorize\Provider\Resource;
 class Config implements ProviderInterface
 {
     /**
-     * @var \Zend\Permissions\Acl\Resource\ResourceInterface[]
+     * @var ResourceInterface[]
      */
-    protected $resources = array();
+    protected $resources = [];
 
     /**
-     * @param \Zend\Permissions\Acl\Resource\ResourceInterface[] $config
+     * @param ResourceInterface[] $config
      */
-    public function __construct(array $config = array())
+    public function __construct(array $config = [])
     {
         $this->resources = $config;
     }

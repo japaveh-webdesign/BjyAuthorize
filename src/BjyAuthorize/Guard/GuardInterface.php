@@ -8,7 +8,7 @@
 
 namespace BjyAuthorize\Guard;
 
-use Zend\EventManager\ListenerAggregateInterface;
+use Laminas\EventManager\ListenerAggregateInterface;
 
 /**
  * Interface for generic guard listeners

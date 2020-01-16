@@ -9,13 +9,13 @@
 namespace BjyAuthorize\Provider\Identity;
 
 use BjyAuthorize\Exception\InvalidRoleException;
-use Zend\Db\TableGateway\TableGateway;
-use Zend\Db\Sql\Select;
-use Zend\Permissions\Acl\Role\RoleInterface;
+use Laminas\Db\Sql\Select;
+use Laminas\Db\TableGateway\TableGateway;
+use Laminas\Permissions\Acl\Role\RoleInterface;
 use ZfcUser\Service\User;
 
 /**
- * Identity provider based on {@see \Zend\Db\Adapter\Adapter}
+ * Identity provider based on {@see \Laminas\Db\Adapter\Adapter}
  *
  * @author Ben Youngblood <bx.youngblood@gmail.com>
  */
@@ -27,7 +27,7 @@ class ZfcUserZendDb implements ProviderInterface
     protected $userService;
 
     /**
-     * @var string|\Zend\Permissions\Acl\Role\RoleInterface
+     * @var string|RoleInterface
      */
     protected $defaultRole;
 
@@ -37,18 +37,18 @@ class ZfcUserZendDb implements ProviderInterface
     protected $tableName = 'user_role_linker';
 
     /**
-     * @var \Zend\Db\TableGateway\TableGateway
+     * @var TableGateway
      */
     private $tableGateway;
 
     /**
-     * @param \Zend\Db\TableGateway\TableGateway $tableGateway
-     * @param \ZfcUser\Service\User              $userService
+     * @param TableGateway $tableGateway
+     * @param User $userService
      */
     public function __construct(TableGateway $tableGateway, User $userService)
     {
         $this->tableGateway = $tableGateway;
-        $this->userService  = $userService;
+        $this->userService = $userService;
     }
 
     /**
@@ -58,8 +58,8 @@ class ZfcUserZendDb implements ProviderInterface
     {
         $authService = $this->userService->getAuthService();
 
-        if (! $authService->hasIdentity()) {
-            return array($this->getDefaultRole());
+        if (!$authService->hasIdentity()) {
+            return [$this->getDefaultRole()];
         }
 
         // get roles associated with the logged in user
@@ -68,11 +68,11 @@ class ZfcUserZendDb implements ProviderInterface
         $sql->from($this->tableName);
         // @todo these fields should eventually be configurable
         $sql->join('user_role', 'user_role.id = ' . $this->tableName . '.role_id');
-        $sql->where(array('user_id' => $authService->getIdentity()->getId()));
+        $sql->where(['user_id' => $authService->getIdentity()->getId()]);
 
         $results = $this->tableGateway->selectWith($sql);
 
-        $roles = array();
+        $roles = [];
 
         foreach ($results as $role) {
             $roles[] = $role['role_id'];
@@ -82,7 +82,7 @@ class ZfcUserZendDb implements ProviderInterface
     }
 
     /**
-     * @return string|\Zend\Permissions\Acl\Role\RoleInterface
+     * @return string|RoleInterface
      */
     public function getDefaultRole()
     {
@@ -90,13 +90,13 @@ class ZfcUserZendDb implements ProviderInterface
     }
 
     /**
-     * @param string|\Zend\Permissions\Acl\Role\RoleInterface $defaultRole
+     * @param string|RoleInterface $defaultRole
      *
-     * @throws \BjyAuthorize\Exception\InvalidRoleException
+     * @throws InvalidRoleException
      */
     public function setDefaultRole($defaultRole)
     {
-        if (! ($defaultRole instanceof RoleInterface || is_string($defaultRole))) {
+        if (!($defaultRole instanceof RoleInterface || is_string($defaultRole))) {
             throw InvalidRoleException::invalidRoleInstance($defaultRole);
         }
 

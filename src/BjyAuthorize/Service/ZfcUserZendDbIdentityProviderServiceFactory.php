@@ -10,9 +10,10 @@ namespace BjyAuthorize\Service;
 
 use BjyAuthorize\Provider\Identity\ZfcUserZendDb;
 use Interop\Container\ContainerInterface;
-use Zend\Db\TableGateway\TableGateway;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\Db\TableGateway\TableGateway;
+use Laminas\ServiceManager\FactoryInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
+use ZfcUser\Service\User;
 
 /**
  * Factory responsible of instantiating {@see \BjyAuthorize\Provider\Identity\ZfcUserZendDb}
@@ -23,9 +24,9 @@ class ZfcUserZendDbIdentityProviderServiceFactory implements FactoryInterface
 {
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        /* @var $tableGateway \Zend\Db\TableGateway\TableGateway */
+        /* @var $tableGateway TableGateway */
         $tableGateway = new TableGateway('user_role_linker', $container->get('zfcuser_zend_db_adapter'));
-        /* @var $userService \ZfcUser\Service\User */
+        /* @var $userService User */
         $userService = $container->get('zfcuser_user_service');
         $config = $container->get('BjyAuthorize\Config');
 
@@ -39,7 +40,7 @@ class ZfcUserZendDbIdentityProviderServiceFactory implements FactoryInterface
     /**
      * {@inheritDoc}
      *
-     * @return \BjyAuthorize\Provider\Identity\ZfcUserZendDb
+     * @return ZfcUserZendDb
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {

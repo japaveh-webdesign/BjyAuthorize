@@ -1,7 +1,7 @@
 # Using BjyAuthorize with Doctrine
 
 If you wish to use Doctrine 2 ORM entities (ORM) or MongoDB ODM Documents (ODM), all you will need to do is
-having your authentication identity implement either `Zend\Permissions\Acl\Role\RoleInterface` or
+having your authentication identity implement either `Laminas\Permissions\Acl\Role\RoleInterface` or
 `BjyAuthorize\Provider\Role\ProviderInterface`.
 
 ## BjyAuthorize, ZfcUser and ZfcUserDoctrineORM

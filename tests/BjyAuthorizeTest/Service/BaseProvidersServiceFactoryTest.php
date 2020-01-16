@@ -10,14 +10,14 @@
 
 namespace BjyAuthorizeTest\Service;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 
 /**
  * Test for {@see \BjyAuthorize\Service\ResourceProvidersServiceFactory}
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class BaseProvidersServiceFactoryTest extends PHPUnit_Framework_TestCase
+class BaseProvidersServiceFactoryTest extends TestCase
 {
     /**
      * @covers \BjyAuthorize\Service\BaseProvidersServiceFactory::createService
@@ -25,16 +25,16 @@ class BaseProvidersServiceFactoryTest extends PHPUnit_Framework_TestCase
     public function testCreateService()
     {
         $factory        = $this->getMockForAbstractClass('BjyAuthorize\\Service\\BaseProvidersServiceFactory');
-        $serviceLocator = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
-        $foo            = $this->getMock('BjyAuthorize\\Provider\\Resource\\ProviderInterface');
-        $bar            = $this->getMock('BjyAuthorize\\Provider\\Resource\\ProviderInterface');
-        $config         = array(
-            'providers' => array(
-                'foo'                         => array(),
-                'bar'                         => array(),
-                __NAMESPACE__ . '\\MockProvider' => array('option' => 'value'),
-            ),
-        );
+        $serviceLocator = $this->createMock('Laminas\\ServiceManager\\ServiceLocatorInterface');
+        $foo            = $this->createMock('BjyAuthorize\\Provider\\Resource\\ProviderInterface');
+        $bar            = $this->createMock('BjyAuthorize\\Provider\\Resource\\ProviderInterface');
+        $config         = [
+            'providers' => [
+                'foo'                         => [],
+                'bar'                         => [],
+                __NAMESPACE__ . '\\MockProvider' => ['option' => 'value'],
+            ],
+        ];
 
         $serviceLocator
             ->expects($this->any())
@@ -42,7 +42,7 @@ class BaseProvidersServiceFactoryTest extends PHPUnit_Framework_TestCase
             ->will(
                 $this->returnCallback(
                     function ($serviceName) {
-                        return in_array($serviceName, array('foo', 'bar'), true);
+                        return in_array($serviceName, ['foo', 'bar'], true);
                     }
                 )
             );
@@ -87,7 +87,7 @@ class BaseProvidersServiceFactoryTest extends PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf(__NAMESPACE__ . '\\MockProvider', $invokableProvider);
 
-        $this->assertSame(array('option' => 'value'), $invokableProvider->options);
+        $this->assertSame(['option' => 'value'], $invokableProvider->options);
         $this->assertSame($serviceLocator, $invokableProvider->serviceLocator);
     }
 }

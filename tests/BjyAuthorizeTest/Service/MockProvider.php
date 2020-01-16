@@ -10,7 +10,7 @@
 
 namespace BjyAuthorizeTest\Service;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 /**
  * @author Marco Pivetta <ocramius@gmail.com>s
@@ -23,13 +23,13 @@ class MockProvider
     public $options;
 
     /**
-     * @var \Zend\ServiceManager\ServiceLocatorInterface
+     * @var \Laminas\ServiceManager\ServiceLocatorInterface
      */
     public $serviceLocator;
 
     /**
      * @param array                                        $options
-     * @param \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
+     * @param \Laminas\ServiceManager\ServiceLocatorInterface $serviceLocator
      */
     public function __construct(array $options, ServiceLocatorInterface $serviceLocator)
     {

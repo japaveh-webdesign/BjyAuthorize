@@ -8,19 +8,20 @@
 
 namespace BjyAuthorizeTest\Guard;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Guard\Route;
-use Zend\Mvc\MvcEvent;
+use Laminas\Console\Request;
+use Laminas\Mvc\MvcEvent;
 
 /**
  * Route Guard test
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class RouteTest extends PHPUnit_Framework_TestCase
+class RouteTest extends TestCase
 {
     /**
-     * @var \Zend\ServiceManager\ServiceLocatorInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Laminas\ServiceManager\ServiceLocatorInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $serviceLocator;
 
@@ -43,9 +44,13 @@ class RouteTest extends PHPUnit_Framework_TestCase
     {
         parent::setUp();
 
-        $this->serviceLocator = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
-        $this->authorize = $authorize = $this->getMock('BjyAuthorize\\Service\\Authorize', array(), array(), '', false);
-        $this->routeGuard = new Route(array(), $this->serviceLocator);
+        $this->serviceLocator = $this->getMockBuilder('Laminas\\ServiceManager\\ServiceLocatorInterface')
+            ->getMock();
+        $this->authorize = $authorize = $this->getMockBuilder('BjyAuthorize\\Service\\Authorize')
+            ->disableOriginalConstructor()
+            ->setMethods(['isAllowed', 'getIdentity'])
+            ->getMock();
+        $this->routeGuard = new Route([], $this->serviceLocator);
 
         $this
             ->serviceLocator
@@ -61,8 +66,12 @@ class RouteTest extends PHPUnit_Framework_TestCase
      */
     public function testAttachDetach()
     {
-        $eventManager = $this->getMock('Zend\\EventManager\\EventManagerInterface');
-        $callbackMock = $this->getMock('Zend\\Stdlib\\CallbackHandler', array(), array(), '', false);
+        $eventManager = $this->createMock('Laminas\\EventManager\\EventManagerInterface');
+
+        $callbackMock = $this->getMockBuilder(\stdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
+
         $eventManager
             ->expects($this->once())
             ->method('attach')
@@ -85,26 +94,26 @@ class RouteTest extends PHPUnit_Framework_TestCase
     public function testGetResourcesGetRules()
     {
         $controller = new Route(
-            array(
-                 array(
+            [
+                 [
                      'route' => 'test/route',
-                     'roles' => array(
+                     'roles' => [
                          'admin',
                          'user',
-                     ),
-                 ),
-                 array(
+                     ],
+                 ],
+                 [
                      'route' => 'test2-route',
-                     'roles' => array(
+                     'roles' => [
                          'admin2',
                          'user2',
-                     ),
-                 ),
-                 array(
+                     ],
+                 ],
+                 [
                      'route' => 'test3-route',
                      'roles' => 'admin3'
-                 ),
-            ),
+                 ],
+            ],
             $this->serviceLocator
         );
 
@@ -119,15 +128,15 @@ class RouteTest extends PHPUnit_Framework_TestCase
 
         $this->assertCount(3, $rules['allow']);
         $this->assertContains(
-            array(array('admin', 'user'), 'route/test/route'),
+            [['admin', 'user'], 'route/test/route'],
             $rules['allow']
         );
         $this->assertContains(
-            array(array('admin2', 'user2'), 'route/test2-route'),
+            [['admin2', 'user2'], 'route/test2-route'],
             $rules['allow']
         );
         $this->assertContains(
-            array(array('admin3'), 'route/test3-route'),
+            [['admin3'], 'route/test3-route'],
             $rules['allow']
         );
     }
@@ -139,16 +148,16 @@ class RouteTest extends PHPUnit_Framework_TestCase
     public function testGetRulesWithAssertion()
     {
         $controller = new Route(
-            array(
-                 array(
+            [
+                 [
                      'route' => 'test/route',
-                     'roles' => array(
+                     'roles' => [
                          'admin',
                          'user',
-                     ),
+                     ],
                      'assertion' => 'test-assertion'
-                 ),
-            ),
+                 ],
+            ],
             $this->serviceLocator
         );
 
@@ -156,7 +165,7 @@ class RouteTest extends PHPUnit_Framework_TestCase
 
         $this->assertCount(1, $rules['allow']);
         $this->assertContains(
-            array(array('admin', 'user'), 'route/test/route', null, 'test-assertion'),
+            [['admin', 'user'], 'route/test/route', null, 'test-assertion'],
             $rules['allow']
         );
     }
@@ -197,19 +206,44 @@ class RouteTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue(false));
         $event->expects($this->once())->method('setError')->with(Route::ERROR);
 
-        $event->expects($this->at(3))->method('setParam')->with('route', 'test-route');
-        $event->expects($this->at(4))->method('setParam')->with('identity', 'admin');
-        $event->expects($this->at(5))->method('setParam')->with(
+        $event->expects($this->at(4))->method('setParam')->with('route', 'test-route');
+        $event->expects($this->at(5))->method('setParam')->with('identity', 'admin');
+        $event->expects($this->at(6))->method('setParam')->with(
             'exception',
             $this->isInstanceOf('BjyAuthorize\Exception\UnAuthorizedException')
         );
+
+        $responseCollection = $this->getMockBuilder(\Laminas\EventManager\ResponseCollection::class)
+            ->getMock();
 
         $event
             ->getTarget()
             ->getEventManager()
             ->expects($this->once())
             ->method('trigger')
-            ->with(MvcEvent::EVENT_DISPATCH_ERROR, $event);
+            ->with(MvcEvent::EVENT_DISPATCH_ERROR, null, $event->getParams())
+            ->willReturn($responseCollection);
+
+        $this->assertNull($this->routeGuard->onRoute($event), 'Does not stop event propagation');
+    }
+
+    /**
+     * @covers \BjyAuthorize\Guard\Controller::onDispatch
+     */
+    public function testOnDispatchWithInvalidResourceConsole()
+    {
+        $event = $this->getMockBuilder('Laminas\\Mvc\\MvcEvent')
+            ->setMethods(['getRequest', 'getRouteMatch'])
+            ->getMock();
+        $routeMatch   = $this->getMockBuilder('Laminas\\Mvc\\Router\\RouteMatch')
+            ->setMethods(['getMatchedRouteName'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $request = $this->getMockBuilder(Request::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $event->method('getRouteMatch')->willReturn($routeMatch);
+        $event->method('getRequest')->willReturn($request);
 
         $this->assertNull($this->routeGuard->onRoute($event), 'Does not stop event propagation');
     }
@@ -217,15 +251,25 @@ class RouteTest extends PHPUnit_Framework_TestCase
     /**
      * @param string|null $route
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject|\Zend\Mvc\MvcEvent
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Laminas\Mvc\MvcEvent
      */
     private function createMvcEvent($route = null)
     {
-        $eventManager = $this->getMock('Zend\\EventManager\\EventManagerInterface');
-        $application  = $this->getMock('Zend\\Mvc\\Application', array(), array(), '', false);
-        $event        = $this->getMock('Zend\\Mvc\\MvcEvent');
-        $routeMatch   = $this->getMock('Zend\\Mvc\\Router\\RouteMatch', array(), array(), '', false);
-        $request      = $this->getMock('Zend\\Http\\Request');
+        $eventManager = $this->getMockBuilder('Laminas\\EventManager\\EventManagerInterface')
+            ->getMock();
+        $application  = $this->getMockBuilder('Laminas\\Mvc\\Application')
+            ->setMethods(['getEventManager'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $event        = $this->getMockBuilder('Laminas\\Mvc\\MvcEvent')
+            ->setMethods(['getRouteMatch', 'getRequest', 'getTarget', 'setError', 'setParam'])
+            ->getMock();
+        $routeMatch   = $this->getMockBuilder('Laminas\\Mvc\\Router\\RouteMatch')
+            ->setMethods(['getMatchedRouteName'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $request      = $this->getMockBuilder('Laminas\\Http\\Request')
+            ->getMock();
 
         $event->expects($this->any())->method('getRouteMatch')->will($this->returnValue($routeMatch));
         $event->expects($this->any())->method('getRequest')->will($this->returnValue($request));

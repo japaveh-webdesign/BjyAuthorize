@@ -8,9 +8,10 @@
 
 namespace BjyAuthorize\Service;
 
+use Closure;
 use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\FactoryInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Factory for building a cache key generator
@@ -23,7 +24,7 @@ class CacheKeyGeneratorFactory implements FactoryInterface
      * @param ContainerInterface $container
      * @param string $requestedName
      * @param array|null $options
-     * @return \Closure
+     * @return Closure
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
@@ -38,7 +39,7 @@ class CacheKeyGeneratorFactory implements FactoryInterface
     /**
      * Create a cache key
      *
-     * @param   ServiceLocatorInterface $serviceLocator
+     * @param ServiceLocatorInterface $serviceLocator
      * @return  callable
      */
     public function createService(ServiceLocatorInterface $serviceLocator)

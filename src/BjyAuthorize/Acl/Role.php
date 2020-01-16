@@ -9,7 +9,8 @@
 namespace BjyAuthorize\Acl;
 
 use BjyAuthorize\Exception;
-use Zend\Permissions\Acl\Role\RoleInterface;
+use BjyAuthorize\Exception\InvalidRoleException;
+use Laminas\Permissions\Acl\Role\RoleInterface;
 
 /**
  * Base role object
@@ -29,7 +30,7 @@ class Role implements RoleInterface, HierarchicalRoleInterface
     protected $parent;
 
     /**
-     * @param string|null               $roleId
+     * @param string|null $roleId
      * @param RoleInterface|string|null $parent
      */
     public function __construct($roleId = null, $parent = null)
@@ -57,7 +58,7 @@ class Role implements RoleInterface, HierarchicalRoleInterface
      */
     public function setRoleId($roleId)
     {
-        $this->roleId = (string) $roleId;
+        $this->roleId = (string)$roleId;
 
         return $this;
     }
@@ -73,9 +74,9 @@ class Role implements RoleInterface, HierarchicalRoleInterface
     /**
      * @param RoleInterface|string|null $parent
      *
-     * @throws \BjyAuthorize\Exception\InvalidRoleException
-     *
      * @return self
+     * @throws InvalidRoleException
+     *
      */
     public function setParent($parent)
     {
@@ -97,6 +98,6 @@ class Role implements RoleInterface, HierarchicalRoleInterface
             return $this;
         }
 
-        throw Exception\InvalidRoleException::invalidRoleInstance($parent);
+        throw InvalidRoleException::invalidRoleInstance($parent);
     }
 }

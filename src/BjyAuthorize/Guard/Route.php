@@ -9,12 +9,13 @@
 namespace BjyAuthorize\Guard;
 
 use BjyAuthorize\Exception\UnAuthorizedException;
-use Zend\EventManager\EventManagerInterface;
-use Zend\Mvc\MvcEvent;
+use Laminas\Console\Request as ConsoleRequest;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\Mvc\MvcEvent;
 
 /**
  * Route Guard listener, allows checking of permissions
- * during {@see \Zend\Mvc\MvcEvent::EVENT_ROUTE}
+ * during {@see \Laminas\Mvc\MvcEvent::EVENT_ROUTE}
  *
  * @author Ben Youngblood <bx.youngblood@gmail.com>
  */
@@ -25,17 +26,12 @@ class Route extends AbstractGuard
      */
     const ERROR = 'error-unauthorized-route';
 
-    protected function extractResourcesFromRule(array $rule)
-    {
-        return array('route/' . $rule['route']);
-    }
-
     /**
      * {@inheritDoc}
      */
     public function attach(EventManagerInterface $events, $priority = 1)
     {
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'onRoute'), -1000);
+        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, [$this, 'onRoute'], -1000);
     }
 
     /**
@@ -44,7 +40,7 @@ class Route extends AbstractGuard
      *
      * @param MvcEvent $event
      *
-     * @return void
+     * @return mixed
      */
     public function onRoute(MvcEvent $event)
     {
@@ -53,7 +49,7 @@ class Route extends AbstractGuard
         $match = $event->getRouteMatch();
         $routeName = $match->getMatchedRouteName();
 
-        if ($service->isAllowed('route/' . $routeName)) {
+        if ($service->isAllowed('route/' . $routeName) || (class_exists(ConsoleRequest::class) && $event->getRequest() instanceof ConsoleRequest)) {
             return;
         }
 
@@ -62,10 +58,26 @@ class Route extends AbstractGuard
         $event->setParam('identity', $service->getIdentity());
         $event->setParam('exception', new UnAuthorizedException('You are not authorized to access ' . $routeName));
 
-        /* @var $app \Zend\Mvc\Application */
+        /* @var $app \Laminas\Mvc\Application */
         $app = $event->getTarget();
         $eventManager = $app->getEventManager();
         $eventManager->setEventPrototype($event);
-        $eventManager->trigger(MvcEvent::EVENT_DISPATCH_ERROR, null, $event->getParams());
+
+        $results = $eventManager->trigger(
+            MvcEvent::EVENT_DISPATCH_ERROR,
+            null,
+            $event->getParams()
+        );
+        $return = $results->last();
+        if (!$return) {
+            return $event->getResult();
+        }
+
+        return $return;
+    }
+
+    protected function extractResourcesFromRule(array $rule)
+    {
+        return ['route/' . $rule['route']];
     }
 }

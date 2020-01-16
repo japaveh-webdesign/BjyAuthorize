@@ -2,22 +2,23 @@
 /**
  * BjyAuthorize Module (https://github.com/bjyoungblood/BjyAuthorize)
  *
- * @link    https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
+ * @link https://github.com/bjyoungblood/BjyAuthorize for the canonical source repository
  * @license http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace BjyAuthorize;
 
-use BjyAuthorize\Guard\AbstractGuard;
-use BjyAuthorize\View\UnauthorizedStrategy;
-use Zend\EventManager\EventInterface;
-use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
-use Zend\ModuleManager\Feature\BootstrapListenerInterface;
-use Zend\ModuleManager\Feature\ConfigProviderInterface;
-use Zend\ModuleManager\Feature\ControllerPluginProviderInterface;
-use Zend\ModuleManager\Feature\ViewHelperProviderInterface;
 use BjyAuthorize\Controller\Plugin;
+use BjyAuthorize\Guard\AbstractGuard;
 use BjyAuthorize\View\Helper;
+use BjyAuthorize\View\UnauthorizedStrategy;
+use Laminas\EventManager\EventInterface;
+use Laminas\ModuleManager\Feature\BootstrapListenerInterface;
+use Laminas\ModuleManager\Feature\ConfigProviderInterface;
+use Laminas\ModuleManager\Feature\ControllerPluginProviderInterface;
+use Laminas\ModuleManager\Feature\ViewHelperProviderInterface;
+use Laminas\Mvc\ApplicationInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 /**
  * BjyAuthorize Module
@@ -25,7 +26,6 @@ use BjyAuthorize\View\Helper;
  * @author Ben Youngblood <bx.youngblood@gmail.com>
  */
 class Module implements
-    AutoloaderProviderInterface,
     BootstrapListenerInterface,
     ConfigProviderInterface,
     ControllerPluginProviderInterface,
@@ -36,18 +36,20 @@ class Module implements
      */
     public function onBootstrap(EventInterface $event)
     {
-        /* @var $app \Zend\Mvc\ApplicationInterface */
+        /* @var $app ApplicationInterface */
         $app = $event->getTarget();
-        /* @var $sm \Zend\ServiceManager\ServiceLocatorInterface */
+        /* @var $sm ServiceLocatorInterface */
         $serviceManager = $app->getServiceManager();
-        $config         = $serviceManager->get('BjyAuthorize\Config');
+        $config = $serviceManager->get('BjyAuthorize\Config');
         /** @var UnauthorizedStrategy $strategy */
         $strategy = $serviceManager->get($config['unauthorized_strategy']);
         /** @var AbstractGuard[] $guards */
         $guards = $serviceManager->get('BjyAuthorize\Guards');
+
         foreach ($guards as $guard) {
             $guard->attach($app->getEventManager());
         }
+
         $strategy->attach($app->getEventManager());
     }
 
@@ -56,36 +58,23 @@ class Module implements
      */
     public function getViewHelperConfig()
     {
-        return array(
-            'factories' => array(
+        return [
+            'factories' => [
                 'isAllowed' => Helper\IsAllowedFactory::class,
-            ),
-        );
-    }
-    /**
-     * {@inheritDoc}
-     */
-    public function getControllerPluginConfig()
-    {
-        return array(
-            'factories' => array(
-                'isAllowed' => Plugin\IsAllowedFactory::class
-            ),
-        );
+            ],
+        ];
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getAutoloaderConfig()
+    public function getControllerPluginConfig()
     {
-        return array(
-            'Zend\Loader\StandardAutoloader' => array(
-                'namespaces' => array(
-                    __NAMESPACE__ => __DIR__ . '/../../src/' . __NAMESPACE__,
-                ),
-            ),
-        );
+        return [
+            'factories' => [
+                'isAllowed' => Plugin\IsAllowedFactory::class
+            ],
+        ];
     }
 
     /**

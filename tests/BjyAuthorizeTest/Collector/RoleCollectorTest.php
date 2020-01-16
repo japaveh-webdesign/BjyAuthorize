@@ -9,14 +9,14 @@
 namespace BjyAuthorizeTest\Collector;
 
 use BjyAuthorize\Collector\RoleCollector;
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 
 /**
  * Tests for {@see \BjyAuthorize\Collector\RoleCollector}
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class RoleCollectorTest extends PHPUnit_Framework_TestCase
+class RoleCollectorTest extends TestCase
 {
     /**
      * @var \BjyAuthorize\Collector\RoleCollector
@@ -35,7 +35,7 @@ class RoleCollectorTest extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        $this->identityProvider = $this->getMock('BjyAuthorize\\Provider\\Identity\\ProviderInterface');
+        $this->identityProvider = $this->createMock('BjyAuthorize\\Provider\\Identity\\ProviderInterface');
         $this->collector        = new RoleCollector($this->identityProvider);
     }
 
@@ -47,8 +47,8 @@ class RoleCollectorTest extends PHPUnit_Framework_TestCase
      */
     public function testCollect()
     {
-        $role1    = $this->getMock('Zend\\Permissions\\Acl\\Role\\RoleInterface');
-        $mvcEvent = $this->getMock('Zend\\Mvc\\MvcEvent');
+        $role1    = $this->createMock('Laminas\\Permissions\\Acl\\Role\\RoleInterface');
+        $mvcEvent = $this->createMock('Laminas\\Mvc\\MvcEvent');
 
         $role1->expects($this->any())->method('getRoleId')->will($this->returnValue('role1'));
 
@@ -58,11 +58,11 @@ class RoleCollectorTest extends PHPUnit_Framework_TestCase
             ->method('getIdentityRoles')
             ->will(
                 $this->returnValue(
-                    array(
+                    [
                          $role1,
                          'role2',
                          'key' => 'role3',
-                    )
+                    ]
                 )
             );
 
@@ -94,8 +94,8 @@ class RoleCollectorTest extends PHPUnit_Framework_TestCase
      */
     public function testTraversableCollect()
     {
-        $role1    = $this->getMock('Zend\\Permissions\\Acl\\Role\\RoleInterface');
-        $mvcEvent = $this->getMock('Zend\\Mvc\\MvcEvent');
+        $role1    = $this->createMock('Laminas\\Permissions\\Acl\\Role\\RoleInterface');
+        $mvcEvent = $this->createMock('Laminas\\Mvc\\MvcEvent');
 
         $role1->expects($this->any())->method('getRoleId')->will($this->returnValue('role1'));
 
@@ -106,11 +106,11 @@ class RoleCollectorTest extends PHPUnit_Framework_TestCase
             ->will(
                 $this->returnValue(
                     new \ArrayIterator(
-                        array(
+                        [
                             $role1,
                             'role2',
                             'key' => 'role3',
-                        )
+                        ]
                     )
                 )
             );
@@ -130,7 +130,7 @@ class RoleCollectorTest extends PHPUnit_Framework_TestCase
      */
     public function testGetName()
     {
-        $this->assertInternalType('string', $this->collector->getName());
+        $this->assertIsString($this->collector->getName());
     }
 
     /**
@@ -138,6 +138,6 @@ class RoleCollectorTest extends PHPUnit_Framework_TestCase
      */
     public function testGetPriority()
     {
-        $this->assertInternalType('integer', $this->collector->getPriority());
+        $this->assertIsInt($this->collector->getPriority());
     }
 }

@@ -8,7 +8,7 @@
 
 namespace BjyAuthorizeTest\Provider\Identity;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Provider\Identity\ZfcUserZendDb;
 
 /**
@@ -16,10 +16,10 @@ use BjyAuthorize\Provider\Identity\ZfcUserZendDb;
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class ZfcUserZendDbTest extends PHPUnit_Framework_TestCase
+class ZfcUserZendDbTest extends TestCase
 {
     /**
-     * @var \Zend\Authentication\AuthenticationService|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Laminas\Authentication\AuthenticationService|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $authService;
 
@@ -29,7 +29,7 @@ class ZfcUserZendDbTest extends PHPUnit_Framework_TestCase
     protected $userService;
 
     /**
-     * @var \Zend\Db\TableGateway\TableGateway|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Laminas\Db\TableGateway\TableGateway|\PHPUnit_Framework_MockObject_MockObject
      */
     private $tableGateway;
 
@@ -45,9 +45,9 @@ class ZfcUserZendDbTest extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        $this->authService  = $this->getMock('Zend\Authentication\AuthenticationService');
-        $this->userService  = $this->getMock('ZfcUser\Service\User');
-        $this->tableGateway = $this->getMock('Zend\Db\TableGateway\TableGateway', array(), array(), '', false);
+        $this->authService  = $this->createMock('Laminas\Authentication\AuthenticationService');
+        $this->userService  = $this->getMockBuilder('ZfcUser\Service\User')->setMethods(['getAuthService'])->getMock();
+        $this->tableGateway = $this->getMockBuilder('Laminas\Db\TableGateway\TableGateway')->setMethods([])->disableOriginalConstructor()->getMock();
 
         $this
             ->userService
@@ -66,7 +66,7 @@ class ZfcUserZendDbTest extends PHPUnit_Framework_TestCase
     {
         $this->provider->setDefaultRole('test-default');
 
-        $this->assertSame(array('test-default'), $this->provider->getIdentityRoles());
+        $this->assertSame(['test-default'], $this->provider->getIdentityRoles());
     }
 
     /**
@@ -77,11 +77,11 @@ class ZfcUserZendDbTest extends PHPUnit_Framework_TestCase
         $this->provider->setDefaultRole('test');
         $this->assertSame('test', $this->provider->getDefaultRole());
 
-        $role = $this->getMock('Zend\\Permissions\\Acl\\Role\\RoleInterface');
+        $role = $this->createMock('Laminas\\Permissions\\Acl\\Role\\RoleInterface');
         $this->provider->setDefaultRole($role);
         $this->assertSame($role, $this->provider->getDefaultRole());
 
-        $this->setExpectedException('BjyAuthorize\\Exception\\InvalidRoleException');
+        $this->expectException('BjyAuthorize\\Exception\\InvalidRoleException');
         $this->provider->setDefaultRole(false);
     }
 
@@ -91,6 +91,6 @@ class ZfcUserZendDbTest extends PHPUnit_Framework_TestCase
     public function testGetIdentityRoles()
     {
         $roles = $this->provider->getIdentityRoles();
-        $this->assertEquals($roles, array(null));
+        $this->assertEquals($roles, [null]);
     }
 }

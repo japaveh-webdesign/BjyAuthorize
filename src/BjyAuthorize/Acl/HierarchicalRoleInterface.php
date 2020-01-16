@@ -8,7 +8,7 @@
 
 namespace BjyAuthorize\Acl;
 
-use Zend\Permissions\Acl\Role\RoleInterface;
+use Laminas\Permissions\Acl\Role\RoleInterface;
 
 /**
  * Interface for a role with a possible parent role.
@@ -20,7 +20,7 @@ interface HierarchicalRoleInterface extends RoleInterface
     /**
      * Get the parent role
      *
-     * @return \Zend\Permissions\Acl\Role\RoleInterface|null
+     * @return RoleInterface|null
      */
     public function getParent();
 }

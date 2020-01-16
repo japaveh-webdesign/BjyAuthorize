@@ -8,7 +8,7 @@
 
 namespace BjyAuthorizeTest\Service;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Service\ObjectRepositoryRoleProviderFactory;
 
 /**
@@ -16,7 +16,7 @@ use BjyAuthorize\Service\ObjectRepositoryRoleProviderFactory;
  *
  * @author Tom Oram <tom@scl.co.uk>
  */
-class ObjectRepositoryRoleProviderFactoryTest extends PHPUnit_Framework_TestCase
+class ObjectRepositoryRoleProviderFactoryTest extends TestCase
 {
     private $locator;
     private $entityManager;
@@ -25,9 +25,9 @@ class ObjectRepositoryRoleProviderFactoryTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->locator       = $this->getMock('Zend\ServiceManager\ServiceLocatorInterface');
-        $this->entityManager = $this->getMock('Doctrine\Common\Persistence\ObjectManager');
-        $this->repository    = $this->getMock('Doctrine\Common\Persistence\ObjectRepository');
+        $this->locator       = $this->createMock('Laminas\ServiceManager\ServiceLocatorInterface');
+        $this->entityManager = $this->createMock('Doctrine\Common\Persistence\ObjectManager');
+        $this->repository    = $this->createMock('Doctrine\Common\Persistence\ObjectRepository');
         $this->factory       = new ObjectRepositoryRoleProviderFactory();
     }
 
@@ -38,14 +38,14 @@ class ObjectRepositoryRoleProviderFactoryTest extends PHPUnit_Framework_TestCase
     {
         $testClassName = 'TheTestClass';
 
-        $config = array(
-            'role_providers' => array(
-                'BjyAuthorize\Provider\Role\ObjectRepositoryProvider' => array(
+        $config = [
+            'role_providers' => [
+                'BjyAuthorize\Provider\Role\ObjectRepositoryProvider' => [
                     'role_entity_class' => $testClassName,
                     'object_manager'    => 'doctrine.entitymanager.orm_default',
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
 
         $this->entityManager->expects($this->once())
             ->method('getRepository')

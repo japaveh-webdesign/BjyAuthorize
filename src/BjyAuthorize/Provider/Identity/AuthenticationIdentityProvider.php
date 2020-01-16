@@ -10,8 +10,8 @@ namespace BjyAuthorize\Provider\Identity;
 
 use BjyAuthorize\Exception\InvalidRoleException;
 use BjyAuthorize\Provider\Role\ProviderInterface as RoleProviderInterface;
-use Zend\Permissions\Acl\Role\RoleInterface;
-use Zend\Authentication\AuthenticationService;
+use Laminas\Authentication\AuthenticationService;
+use Laminas\Permissions\Acl\Role\RoleInterface;
 
 /**
  * Simple identity provider to handle simply guest|user
@@ -26,12 +26,12 @@ class AuthenticationIdentityProvider implements ProviderInterface
     protected $authService;
 
     /**
-     * @var string|\Zend\Permissions\Acl\Role\RoleInterface
+     * @var string|RoleInterface
      */
     protected $defaultRole = 'guest';
 
     /**
-     * @var string|\Zend\Permissions\Acl\Role\RoleInterface
+     * @var string|RoleInterface
      */
     protected $authenticatedRole = 'user';
 
@@ -48,25 +48,25 @@ class AuthenticationIdentityProvider implements ProviderInterface
      */
     public function getIdentityRoles()
     {
-        if (! $identity = $this->authService->getIdentity()) {
-            return array($this->defaultRole);
+        if (!$identity = $this->authService->getIdentity()) {
+            return [$this->defaultRole];
         }
 
         if ($identity instanceof RoleInterface) {
-            return array($identity);
+            return [$identity];
         }
 
         if ($identity instanceof RoleProviderInterface) {
             return $identity->getRoles();
         }
 
-        return array($this->authenticatedRole);
+        return [$this->authenticatedRole];
     }
 
     /**
      * Get the rule that's used if you're not authenticated
      *
-     * @return string|\Zend\Permissions\Acl\Role\RoleInterface
+     * @return string|RoleInterface
      */
     public function getDefaultRole()
     {
@@ -78,11 +78,11 @@ class AuthenticationIdentityProvider implements ProviderInterface
      *
      * @param $defaultRole
      *
-     * @throws \BjyAuthorize\Exception\InvalidRoleException
+     * @throws InvalidRoleException
      */
     public function setDefaultRole($defaultRole)
     {
-        if (! ($defaultRole instanceof RoleInterface || is_string($defaultRole))) {
+        if (!($defaultRole instanceof RoleInterface || is_string($defaultRole))) {
             throw InvalidRoleException::invalidRoleInstance($defaultRole);
         }
 
@@ -92,7 +92,7 @@ class AuthenticationIdentityProvider implements ProviderInterface
     /**
      * Get the role that is used if you're authenticated and the identity provides no role
      *
-     * @return string|\Zend\Permissions\Acl\Role\RoleInterface
+     * @return string|RoleInterface
      */
     public function getAuthenticatedRole()
     {
@@ -102,14 +102,14 @@ class AuthenticationIdentityProvider implements ProviderInterface
     /**
      * Set the role that is used if you're authenticated and the identity provides no role
      *
-     * @param string|\Zend\Permissions\Acl\Role\RoleInterface $authenticatedRole
+     * @param string|RoleInterface $authenticatedRole
      *
-     * @throws \BjyAuthorize\Exception\InvalidRoleException
+     * @throws InvalidRoleException
      *
      */
     public function setAuthenticatedRole($authenticatedRole)
     {
-        if (! ($authenticatedRole instanceof RoleInterface || is_string($authenticatedRole))) {
+        if (!($authenticatedRole instanceof RoleInterface || is_string($authenticatedRole))) {
             throw InvalidRoleException::invalidRoleInstance($authenticatedRole);
         }
 

@@ -10,7 +10,7 @@
 
 namespace BjyAuthorizeTest\Service;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Service\AuthenticationIdentityProviderServiceFactory;
 
 /**
@@ -18,7 +18,7 @@ use BjyAuthorize\Service\AuthenticationIdentityProviderServiceFactory;
  *
  * @author Ingo Walz <ingo.walz@googlemail.com>
  */
-class AuthenticationIdentityProviderServiceFactoryTest extends PHPUnit_Framework_TestCase
+class AuthenticationIdentityProviderServiceFactoryTest extends TestCase
 {
     /**
      * @covers BjyAuthorize\Service\AuthenticationIdentityProviderServiceFactory::createService
@@ -27,14 +27,14 @@ class AuthenticationIdentityProviderServiceFactoryTest extends PHPUnit_Framework
      */
     public function testCreateService()
     {
-        $config = array(
+        $config = [
             'default_role'       => 'test-guest',
             'authenticated_role' => 'test-user',
-        );
+        ];
 
-        $user           = $this->getMock('ZfcUser\\Service\\User', array('getAuthService'));
-        $auth           = $this->getMock('Zend\\Authentication\\AuthenticationService');
-        $serviceLocator = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
+        $user           = $this->getMockBuilder('ZfcUser\\Service\\User')->setMethods(['getAuthService'])->getMock();
+        $auth           = $this->createMock('Laminas\\Authentication\\AuthenticationService');
+        $serviceLocator = $this->createMock('Laminas\\ServiceManager\\ServiceLocatorInterface');
 
         $user->expects($this->once())->method('getAuthService')->will($this->returnValue($auth));
         $serviceLocator

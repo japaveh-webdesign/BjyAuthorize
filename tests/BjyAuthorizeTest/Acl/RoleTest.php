@@ -8,7 +8,7 @@
 
 namespace BjyAuthorizeTest\Acl;
 
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 use BjyAuthorize\Acl\Role;
 use stdClass;
 
@@ -17,7 +17,7 @@ use stdClass;
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class RoleTest extends PHPUnit_Framework_TestCase
+class RoleTest extends TestCase
 {
     /**
      * @covers \BjyAuthorize\Acl\Role::__construct
@@ -91,7 +91,7 @@ class RoleTest extends PHPUnit_Framework_TestCase
     {
         $role = new Role('test1');
 
-        $this->setExpectedException('BjyAuthorize\Exception\InvalidRoleException');
+        $this->expectException('BjyAuthorize\Exception\InvalidRoleException');
         $role->setParent(new stdClass());
     }
 }

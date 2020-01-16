@@ -8,6 +8,8 @@
 
 namespace BjyAuthorize\Provider\Role;
 
+use Laminas\Permissions\Acl\Role\RoleInterface;
+
 /**
  * Role provider interface, provides existing roles list
  *
@@ -16,7 +18,7 @@ namespace BjyAuthorize\Provider\Role;
 interface ProviderInterface
 {
     /**
-     * @return \Zend\Permissions\Acl\Role\RoleInterface[]
+     * @return RoleInterface[]
      */
     public function getRoles();
 }

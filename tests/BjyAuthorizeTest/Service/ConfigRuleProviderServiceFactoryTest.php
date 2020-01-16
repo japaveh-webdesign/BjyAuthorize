@@ -11,14 +11,14 @@
 namespace BjyAuthorizeTest\Service;
 
 use BjyAuthorize\Service\ConfigRuleProviderServiceFactory;
-use PHPUnit_Framework_TestCase;
+use \PHPUnit\Framework\TestCase;
 
 /**
  * Test for {@see \BjyAuthorize\Service\ConfigRuleProviderServiceFactory}
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  */
-class ConfigRuleProviderServiceFactoryTest extends PHPUnit_Framework_TestCase
+class ConfigRuleProviderServiceFactoryTest extends TestCase
 {
     /**
      * @covers \BjyAuthorize\Service\ConfigRuleProviderServiceFactory::createService
@@ -26,8 +26,8 @@ class ConfigRuleProviderServiceFactoryTest extends PHPUnit_Framework_TestCase
     public function testCreateService()
     {
         $factory          = new ConfigRuleProviderServiceFactory();
-        $serviceLocator   = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
-        $config           = array('rule_providers' => array('BjyAuthorize\\Provider\\Rule\\Config' => array()));
+        $serviceLocator   = $this->createMock('Laminas\\ServiceManager\\ServiceLocatorInterface');
+        $config           = ['rule_providers' => ['BjyAuthorize\\Provider\\Rule\\Config' => []]];
 
         $serviceLocator
             ->expects($this->any())

@@ -9,14 +9,14 @@
 namespace BjyAuthorize\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\Db\TableGateway\TableGateway;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\Db\TableGateway\TableGateway;
+use Laminas\ServiceManager\FactoryInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 /**
+ * @return TableGateway
  * @author Simone Castellaneta <s.castel@gmail.com>
  *
- * @return \Zend\Db\TableGateway\TableGateway
  */
 class UserRoleServiceFactory implements FactoryInterface
 {
@@ -28,7 +28,7 @@ class UserRoleServiceFactory implements FactoryInterface
     /**
      * {@inheritDoc}
      *
-     * @return \Zend\Db\TableGateway\TableGateway
+     * @return TableGateway
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {

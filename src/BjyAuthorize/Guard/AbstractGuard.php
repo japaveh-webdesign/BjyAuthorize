@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection ALL */
+
 /**
  * BjyAuthorize Module (https://github.com/bjyoungblood/BjyAuthorize)
  *
@@ -8,10 +9,10 @@
 
 namespace BjyAuthorize\Guard;
 
-use BjyAuthorize\Provider\Rule\ProviderInterface as RuleProviderInterface;
 use BjyAuthorize\Provider\Resource\ProviderInterface as ResourceProviderInterface;
-use \Zend\EventManager\AbstractListenerAggregate;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use BjyAuthorize\Provider\Rule\ProviderInterface as RuleProviderInterface;
+use Interop\Container\ContainerInterface;
+use Laminas\EventManager\AbstractListenerAggregate;
 
 abstract class AbstractGuard extends AbstractListenerAggregate implements
     GuardInterface,
@@ -19,30 +20,30 @@ abstract class AbstractGuard extends AbstractListenerAggregate implements
     ResourceProviderInterface
 {
     /**
-     * @var ServiceLocatorInterface
+     * @var ContainerInterface
      */
     protected $serviceLocator;
 
     /**
      * @var array[]
      */
-    protected $rules = array();
+    protected $rules = [];
 
     /**
      *
-     * @param array                   $rules
-     * @param ServiceLocatorInterface $serviceLocator
+     * @param array $rules
+     * @param ContainerInterface $serviceLocator
      */
-    public function __construct(array $rules, ServiceLocatorInterface $serviceLocator)
+    public function __construct(array $rules, ContainerInterface $serviceLocator)
     {
         $this->serviceLocator = $serviceLocator;
 
         foreach ($rules as $rule) {
-            $rule['roles']  = (array) $rule['roles'];
-            $rule['action'] = isset($rule['action']) ? (array) $rule['action'] : array(null);
+            $rule['roles'] = (array)$rule['roles'];
+            $rule['action'] = isset($rule['action']) ? (array)$rule['action'] : [null];
 
             foreach ($this->extractResourcesFromRule($rule) as $resource) {
-                $this->rules[$resource] = array('roles' => (array) $rule['roles']);
+                $this->rules[$resource] = ['roles' => (array)$rule['roles']];
 
                 if (isset($rule['assertion'])) {
                     $this->rules[$resource]['assertion'] = $rule['assertion'];
@@ -58,7 +59,7 @@ abstract class AbstractGuard extends AbstractListenerAggregate implements
      */
     public function getResources()
     {
-        $resources = array();
+        $resources = [];
 
         foreach (array_keys($this->rules) as $resource) {
             $resources[] = $resource;
@@ -72,9 +73,9 @@ abstract class AbstractGuard extends AbstractListenerAggregate implements
      */
     public function getRules()
     {
-        $rules = array();
+        $rules = [];
         foreach ($this->rules as $resource => $ruleData) {
-            $rule   = array();
+            $rule = [];
             $rule[] = $ruleData['roles'];
             $rule[] = $resource;
 
@@ -86,6 +87,6 @@ abstract class AbstractGuard extends AbstractListenerAggregate implements
             $rules[] = $rule;
         }
 
-        return array('allow' => $rules);
+        return ['allow' => $rules];
     }
 }
