@@ -49,6 +49,12 @@
       "BjyAuthorize\\": "src/BjyAuthorize"
     }
   },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "2.0-dev",
+      "dev-develop": "2.1-dev"
+    }
+  },
   "autoload-dev": {
     "psr-4": {
       "BjyAuthorizeTest\\": "tests/BjyAuthorizeTest"
