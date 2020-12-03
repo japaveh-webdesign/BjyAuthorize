@@ -41,7 +41,7 @@
     "phpunit/phpunit": "^7.5.18 || ^8.0.0",
     "laminas/laminas-console": "^2.8",
     "laminas/laminas-db": "^2.5",
-    "doctrine/common": "^2.10",
+    "doctrine/common": "^2.10 || ^3.0",
     "laminas/laminas-developer-tools": "^1.2.3 || ^2.0.0"
   },
   "autoload": {
